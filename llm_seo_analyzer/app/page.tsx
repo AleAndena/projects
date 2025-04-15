@@ -31,7 +31,7 @@ export default function Home() {
 
     // if url is valid, analyze the corresponding page 
     if(isValidUrl){      
-      const formattedUrl = `/api/crawl/${encodeURIComponent(url)}`;
+      const formattedUrl = `/api/scrape/${encodeURIComponent(url)}`;
       const response = await fetch(formattedUrl);
       const doc = await response.json();
       
