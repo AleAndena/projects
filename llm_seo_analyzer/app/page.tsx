@@ -3,9 +3,9 @@
 import { useState } from "react";
 
 export default function Home() {
-  const [uncheckedUrl, setUncheckedUrl] = useState('');
-  const [isValid, setIsValid] = useState(true);
-  const [validUrl, setValidUrl] = useState('');
+  const [url, setUrl] = useState('');
+  const [isValid, setIsValid] = useState(false);
+  const [clickedSubmit, setClickedSubmit] = useState(false);
 
   // check if input is a valid URL
   function validateURL(input: string): boolean{
@@ -23,18 +23,15 @@ export default function Home() {
   async function handleSubmission(event: React.FormEvent) : Promise<undefined>{
     event.preventDefault();
 
-    // reset validUrl to empty because of new submission
-    setValidUrl('');
+    setClickedSubmit(true);
 
     // check if new url is valid
-    const isValidUrl = validateURL(uncheckedUrl);
+    const isValidUrl = validateURL(url);
     setIsValid(isValidUrl);
 
     // if url is valid, analyze the corresponding page 
-    if(isValidUrl){
-      setValidUrl(uncheckedUrl);
-      
-      const formattedUrl = `/api/crawl/${encodeURIComponent(uncheckedUrl)}`;
+    if(isValidUrl){      
+      const formattedUrl = `/api/crawl/${encodeURIComponent(url)}`;
       const response = await fetch(formattedUrl);
       const doc = await response.json();
       
@@ -55,14 +52,14 @@ export default function Home() {
             <input
               type="text"
               id="url"
-              value={uncheckedUrl}
-              onChange={(e) => setUncheckedUrl(e.target.value)}
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
               placeholder="https://example.com"
               className={`w-full px-4 py-2 bg-gray-800 text-white border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
-                !isValid ? 'border-red-500' : 'border-gray-700'
+                !isValid && clickedSubmit ? 'border-red-500' : 'border-gray-700'
               }`}
             />
-            {!isValid && (
+            {!isValid && clickedSubmit && (
               <p className="mt-1 text-sm text-red-400">Please enter a valid URL (e.g., https://example.com)</p>
             )}
           </div>
@@ -75,16 +72,16 @@ export default function Home() {
           </button>
         </form>
   
-        {validUrl && (
+        {isValid && (
           <div className="mt-6 p-4 bg-gray-800 rounded-md border border-gray-700">
             <p className="text-green-400 font-medium">Submitted URL:</p>
             <a 
-              href={validUrl} 
+              href={url} 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-blue-400 hover:underline break-all"
             >
-              {validUrl}
+              {url}
             </a>
           </div>
         )}
