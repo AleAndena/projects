@@ -20,7 +20,7 @@ export default function Home() {
   }
 
   // handle URL submission
-  function handleSubmission(event: React.FormEvent) : undefined{
+  async function handleSubmission(event: React.FormEvent) : Promise<undefined>{
     event.preventDefault();
 
     // reset validUrl to empty because of new submission
@@ -33,8 +33,11 @@ export default function Home() {
     // if url is valid, analyze the corresponding page 
     if(isValidUrl){
       setValidUrl(uncheckedUrl);
-      console.log('valid URL', validUrl);
-      // analyzing will happen here, just console.logging for now
+      
+      const urlused = `/api/crawl/${encodeURIComponent(uncheckedUrl)}`;
+      console.log(urlused);
+      const loadedDocument = await fetch(urlused);
+      console.log('LOADED DOCUMENT!!!!', (await loadedDocument.json()).document);
     }
   }
 
