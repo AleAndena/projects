@@ -34,10 +34,11 @@ export default function Home() {
     if(isValidUrl){
       setValidUrl(uncheckedUrl);
       
-      const urlused = `/api/crawl/${encodeURIComponent(uncheckedUrl)}`;
-      console.log(urlused);
-      const loadedDocument = await fetch(urlused);
-      console.log('LOADED DOCUMENT!!!!', (await loadedDocument.json()).document);
+      const formattedUrl = `/api/crawl/${encodeURIComponent(uncheckedUrl)}`;
+      const response = await fetch(formattedUrl);
+      const doc = await response.json();
+      
+      console.log('Loaded document ', doc.html);
     }
   }
 

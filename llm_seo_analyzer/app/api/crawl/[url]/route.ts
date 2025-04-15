@@ -9,8 +9,7 @@ export async function GET(
         const url = decodeURIComponent(parameters.url);
 
         const $ = await cheerio.fromURL(url);
-        console.log($);
-        return Response.json({ "document": $.html() });
+        return Response.json({ "html": $.html() });
     } catch (error){
         console.error('Error loading document using URL', error);
         return {error: error};
