@@ -16,10 +16,10 @@ async function getAllHeaders($: cheerio.CheerioAPI): Promise<object[]> {
 async function getStructuredData(
     $: cheerio.CheerioAPI,
     scriptTags: cheerio.Cheerio<Element>
-): Promise<unknown[]> {
+): Promise<object[]> {
     // loop over all script tags (just 1 or maybe many) using Cheerio's .each()
     // element is the raw DOM element
-    const structuredData: unknown[] = [];
+    const structuredData: object[] = [];
 
     scriptTags.each((i: number, element: Element) => {
         try {
