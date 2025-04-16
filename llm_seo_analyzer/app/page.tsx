@@ -35,7 +35,7 @@ export default function Home() {
       const response = await fetch(formattedUrl);
       const doc = await response.json();
       
-      console.log('Loaded document ', doc.html);
+      console.log('Logged the loaded doc', doc.data);
     }
   }
 
@@ -53,7 +53,11 @@ export default function Home() {
               type="text"
               id="url"
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
+              onChange={(e) => { 
+                setUrl(e.target.value) 
+                setIsValid(false)
+                setClickedSubmit(false)
+              }}
               placeholder="https://example.com"
               className={`w-full px-4 py-2 bg-gray-800 text-white border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
                 !isValid && clickedSubmit ? 'border-red-500' : 'border-gray-700'
