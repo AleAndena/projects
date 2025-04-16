@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import { getStructuredData } from '@/app/utils/utils';
+import { getStructuredData, getAllHeaders } from '@/app/utils/utils';
 
 export async function GET(
     req: Request, 
@@ -10,13 +10,17 @@ export async function GET(
         const url = decodeURIComponent(parameters.url);
         const $ = await cheerio.fromURL(url);
 
+        // get all headers
+        const arrOfHeaders = await getAllHeaders($);
+        console.log('TEsting thing to visualize', $('h1, h2, h3'));
+
         // get all json-ld script tags
         const scriptTags = $("script[type='application/ld+json']");
         const structuredData: unknown[] = await getStructuredData($, scriptTags);
 
         const extractedData = {
             title: $('title').text(),
-            h1: $('h1').first().text(),
+            headers: arrOfHeaders,
             metaDescription: $('meta[name="description"]').attr('content') || '',
             structuredData: structuredData.length > 0 ? structuredData : null
             // keywords... how do i decide what is a keyword or not?
