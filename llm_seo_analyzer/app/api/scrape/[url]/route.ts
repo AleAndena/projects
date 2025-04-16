@@ -1,4 +1,5 @@
 import * as cheerio from 'cheerio';
+import { getStructuredData } from '@/app/utils/utils';
 
 export async function GET(
     req: Request, 
@@ -11,23 +12,7 @@ export async function GET(
 
         // get all json-ld script tags
         const scriptTags = $("script[type='application/ld+json']");
-        const structuredData: unknown[] = [];
-
-        // loop over all script tags (just 1 or maybe many) using Cheerio's .each()
-        // element is the raw DOM element
-        scriptTags.each((i, element) => {
-            try {
-                // $(element) turns it into a Cheerio object, which lets us use .text()
-                // .text() gets JSON string in the script tag
-                const jsonText = $(element).text();
-                // parse the json string
-                const parsedData = JSON.parse(jsonText);
-                // add it to the array used to store results
-                structuredData.push(parsedData);
-            } catch (error){
-                console.error('Error parsing json-ld', error)
-            }
-        });
+        const structuredData: unknown[] = await getStructuredData($, scriptTags);
 
         const extractedData = {
             title: $('title').text(),
