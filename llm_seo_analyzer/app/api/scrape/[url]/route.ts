@@ -51,35 +51,11 @@ export async function GET(
             return { [`${$.name}`]: placeholderObj }
         });
 
+        // again, process them all together
         const allPagesData = await Promise.all(pageDataPromises);
 
+        // return that array of objects where each object is a page and its info
         return Response.json({ data: allPagesData });
-
-        // // initialize the array of objects
-        // const extractedData = [{
-        //     title: $('title').text(),
-        //     headers: [{}],
-        //     metaDescription: $('meta[name="description"]').attr('content') || '',
-        //     structuredData: [{}],
-        //     // keywords... how do i decide what is a keyword or not?
-        // }];
-
-        // // get all headers
-        // const arrOfHeaders = await getAllHeaders($);
-        // extractedData[0].headers = arrOfHeaders;
-
-        // // get all json-ld script tags
-        // const scriptTags = $("script[type='application/ld+json']");
-        // const structuredData: object[] = await getStructuredData($, scriptTags);
-        // extractedData[0].structuredData = structuredData;
-
-        // then i need to do fromUrl for that URL too.
-
-        // AND THEN i need to do the same extraction shit for that page too.
-
-        // AND THENNNN i need to add that page to the final extractedData object, but lowkey
-        // do make the parent an array and have the objects inside, so its an array of the pages extracted data stored
-        // as objects.
     } catch (error) {
         console.error('Error loading document using URL', error);
         return Response.json({
