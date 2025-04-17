@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import { getStructuredData, getAllHeaders } from '@/app/utils/utils';
+import { getStructuredData, getAllHeaders, getKeywords } from '@/app/utils/utils';
 
 export async function GET(
     req: Request,
@@ -51,8 +51,9 @@ export async function GET(
                 metaDescription: $('meta[name="description"]').attr('content') || '',
                 bodyText: bodyText,
                 structuredData: await getStructuredData($, $("script[type='application/ld+json']")),
-                // keywords... how do i decide what is a keyword or not?
             };
+            const keywords = await getKeywords(placeholderObj);
+            console.log('KEYWORDS FROM AI', keywords);
 
             return placeholderObj;
         });

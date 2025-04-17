@@ -2,7 +2,7 @@ import * as cheerio from 'cheerio';
 import { Element } from 'domhandler';
 import OpenAI from 'openai';
 
-async function getAllHeaders($: cheerio.CheerioAPI): Promise<object[]> {
+async function getAllHeaders($: cheerio.CheerioAPI): Promise<{type: string, text: string}[]> {
     // loop over all of those headers and get just their name and text
     return $('h1, h2, h3').map((i, element) => {
         return {
@@ -53,7 +53,7 @@ async function getKeywords(
     }
 ) {
     // extract all the values and assign them to variables
-    const { title, metaDescription, headers, bodyText } = mainPageInfo;
+    const { title, metaDescription, headers } = mainPageInfo;
 
     // create the openai API using the key
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -65,7 +65,9 @@ async function getKeywords(
         .join(',')
         || '';
 
-    
+    // create the prompt for the API
+    const prompt = `Title: ${title || 'Untitled'}\nMeta: ${metaDescription || 'No description'}\n\nH1-H2-H3: ${formattedHeaders || 'No H1-H2-H3'}`;
+    console.log(prompt);
 
     // create the prompt using the information provided
     try {
@@ -78,7 +80,7 @@ async function getKeywords(
                 },
                 {
                     role: 'user',
-                    content: `Title: ${title}\nMeta: ${metaDescription}\n}`,
+                    content: `${prompt}`,
                 },
             ],
             max_tokens: 50,
@@ -94,5 +96,6 @@ async function getKeywords(
 
 export {
     getAllHeaders,
-    getStructuredData
+    getStructuredData,
+    getKeywords
 };
