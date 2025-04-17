@@ -39,6 +39,58 @@ async function getStructuredData(
     return structuredData;
 }
 
+// Decided not to use key page info alongside main page info because then
+// there would be so much context and it could be very expensive/inefficient and maybe even inaccurate.
+// Key page information will be used for keyword density calculation, not for giving context to the AI to 
+// decide on keywords to check for
+async function getKeywords(
+    mainPageInfo: {
+        title: string, 
+        headers: {type: string, text: string}[],
+        metaDescription: string,
+        bodyText: string,
+        structuredData: object[]
+    }
+) {
+    // extract all the values and assign them to variables
+    const { title, metaDescription, headers, bodyText } = mainPageInfo;
+
+    // create the openai API using the key
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    // format the headers for the AI
+    const formattedHeaders = headers
+        .filter(h => h.type === 'h1' || h.type === 'h2' || h.type === 'h3')
+        .map(h => h.text)
+        .join(',')
+        || '';
+
+    
+
+    // create the prompt using the information provided
+    try {
+        const result = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+                {
+                    role: 'system',
+                    content: "You're an SEO expert. Given a site's title, meta description, and H1, suggest 5 keywords seperated by commas for its niche.",
+                },
+                {
+                    role: 'user',
+                    content: `Title: ${title}\nMeta: ${metaDescription}\n}`,
+                },
+            ],
+            max_tokens: 50,
+        });
+
+        //extract the keywords from the output of AI and return it
+        const keywordsFromAi = result.choices[0].message.content;
+        return keywordsFromAi !== null ? keywordsFromAi.split(',').map(keyword => keyword.trim().toLowerCase()) : [];
+    } catch (error) {
+        console.error('OpenAI error:', error);
+    }
+}
 
 export {
     getAllHeaders,

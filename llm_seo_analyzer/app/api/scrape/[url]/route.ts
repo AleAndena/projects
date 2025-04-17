@@ -7,8 +7,8 @@ export async function GET(
 ) {
     try {
         // initialize arrays
-        const arrOfCheerioAPIs: cheerio.CheerioAPI[] = [];
-        const arrOfOtherLinks: string[] = [];
+        const arrOfCheerioAPIs = []; // gonna have the cheerioAPI and the url (for identification purposes)
+        const arrOfOtherLinks: string[] = []; // stores other urls to scrape as well
 
         // get content for the main/home page using given URL
         // put it into the API array
@@ -22,13 +22,17 @@ export async function GET(
         $('a').each((i, link) => {
             const href = $(link).attr('href');
             if (href && href.includes('about')) {
-                arrOfOtherLinks.push(href);
+                const fullURL = new URL(href, url).href;
+                // no duplicate links
+                if(!arrOfOtherLinks.includes(fullURL)){
+                    arrOfOtherLinks.push(fullURL)
+                }
             }
         });
 
         // loop over all the other links and do fromURL on each of them to get their content
-        const otherPagesPromises = arrOfOtherLinks.map(link => {
-            return cheerio.fromURL(link);
+        const otherPagesPromises = arrOfOtherLinks.map(async link => {
+            return await cheerio.fromURL(link);
         });
         // process them in parallel
         const otherPagesCheerioAPIs = await Promise.all(otherPagesPromises);
@@ -40,7 +44,7 @@ export async function GET(
         // an array of objects, where each object is a seperate page and its info
         const pageDataPromises = arrOfCheerioAPIs.map(async ($) => {
             const bodyText = getCleanText($);
-            
+
             const placeholderObj = {
                 title: $('title').text(),
                 headers: await getAllHeaders($),
@@ -50,8 +54,7 @@ export async function GET(
                 // keywords... how do i decide what is a keyword or not?
             };
 
-            // the [] is not an array, it is there cuz the key name is dynamic so you need to put it
-            return { [`${$.name}`]: placeholderObj }
+            return placeholderObj;
         });
 
         // again, process them all together
