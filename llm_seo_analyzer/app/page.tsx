@@ -36,6 +36,7 @@ export default function Home() {
       const doc = await response.json();
       
       console.log('Logged the loaded doc', doc.data);
+      console.log('body text or smt', doc.data[0].initialize.bodyText)
     }
   }
 

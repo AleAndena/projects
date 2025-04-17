@@ -1,5 +1,6 @@
 import * as cheerio from 'cheerio';
 import { Element } from 'domhandler';
+import OpenAI from 'openai';
 
 async function getAllHeaders($: cheerio.CheerioAPI): Promise<object[]> {
     // loop over all of those headers and get just their name and text
@@ -37,6 +38,7 @@ async function getStructuredData(
 
     return structuredData;
 }
+
 
 export {
     getAllHeaders,

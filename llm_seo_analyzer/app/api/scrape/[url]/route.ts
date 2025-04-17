@@ -39,10 +39,13 @@ export async function GET(
         // Now, loop over each of them and get each of their information, and store it in
         // an array of objects, where each object is a seperate page and its info
         const pageDataPromises = arrOfCheerioAPIs.map(async ($) => {
+            const bodyText = getCleanText($);
+            
             const placeholderObj = {
                 title: $('title').text(),
                 headers: await getAllHeaders($),
                 metaDescription: $('meta[name="description"]').attr('content') || '',
+                bodyText: bodyText,
                 structuredData: await getStructuredData($, $("script[type='application/ld+json']")),
                 // keywords... how do i decide what is a keyword or not?
             };
@@ -65,3 +68,13 @@ export async function GET(
         });
     }
 }
+
+// Helper function for getting body text without unwanted garbage
+function getCleanText($: cheerio.CheerioAPI) {
+    const $clone = $('body').clone();
+    $clone.find('script, style, noscript, code, pre').remove();
+    return $clone.text()
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .slice(0, 8000);
+  }
