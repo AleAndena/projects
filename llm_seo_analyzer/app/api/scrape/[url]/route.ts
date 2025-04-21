@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import { getStructuredData, getAllHeaders, getKeywords } from '@/app/utils/utils';
+import { getStructuredData, getAllHeaders, getKeywords, getTopicalRelevance } from '@/app/utils/utils';
 
 export async function GET(
     req: Request,
@@ -43,14 +43,21 @@ export async function GET(
         // Now, loop over each of them and get each of their information, and store it in
         // an array of objects, where each object is a seperate page and its info
         const pageDataPromises = arrOfCheerioAPIs.map(async ($) => {
+            const title = $('title').text();
+            const headers = await getAllHeaders($);
+            const metaDescription = $('meta[name="description"]').attr('content') || '';
             const bodyText = getCleanText($);
+            const structuredData = await getStructuredData($, $("script[type='application/ld+json']"));
 
             const placeholderObj = {
-                title: $('title').text(),
-                headers: await getAllHeaders($),
-                metaDescription: $('meta[name="description"]').attr('content') || '',
-                bodyText: bodyText,
-                structuredData: await getStructuredData($, $("script[type='application/ld+json']")),
+                title,
+                headers,
+                metaDescription,
+                bodyText,
+                structuredData,
+                topicalRelevance: await getTopicalRelevance({
+                    title, headers, metaDescription, bodyText, structuredData
+                })
             };
             const keywords = await getKeywords(placeholderObj);
             console.log('KEYWORDS FROM AI', keywords);

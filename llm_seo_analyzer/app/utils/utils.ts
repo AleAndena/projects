@@ -67,7 +67,6 @@ async function getKeywords(
 
     // create the prompt for the API
     const prompt = `Title: ${title || 'Untitled'}\nMeta: ${metaDescription || 'No description'}\n\nH1-H2-H3: ${formattedHeaders || 'No H1-H2-H3'}`;
-    console.log(prompt);
 
     // create the prompt using the information provided
     try {
@@ -125,7 +124,7 @@ async function getTopicalRelevance(
             messages: [
                 {
                     role: 'system',
-                    content: 'You’re an SEO expert. Based on a page’s title, meta description, and headers, what is its niche? Return a short phrase (ex: "supermarket equipment").',
+                    content: 'You’re an SEO expert. Based on a page’s title, meta description, and headers, what is its niche? Return a short phrase (ex: supermarket equipment).',
                 },
                 { role: 'user', content: nichePrompt },
             ],
@@ -146,7 +145,7 @@ async function getTopicalRelevance(
             messages: [
                 {
                     role: 'system',
-                    content: 'You’re an SEO expert. Given a page’s title, meta description, headers, and a sample of body text, assess if it’s about a specific niche. Rate relevance from 0–10 (0=unrelated, 10=perfectly aligned). Return JSON: `{ score: number, feedback: string }`.',
+                    content: 'You’re an SEO expert. Given a page’s title, meta description, headers, and a sample of body text, assess if it’s about a specific niche. Rate relevance from 0–10 (0=unrelated, 10=perfectly aligned). Return ONLY raw JSON without any markdown formatting or additional text, like this: {"score": number, "feedback": string}`.',
                 },
                 { role: 'user', content: relevancePrompt },
             ],
