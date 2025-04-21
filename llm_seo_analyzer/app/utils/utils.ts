@@ -2,7 +2,7 @@ import * as cheerio from 'cheerio';
 import { Element } from 'domhandler';
 import OpenAI from 'openai';
 
-async function getAllHeaders($: cheerio.CheerioAPI): Promise<{type: string, text: string}[]> {
+async function getAllHeaders($: cheerio.CheerioAPI): Promise<{ type: string, text: string }[]> {
     // loop over all of those headers and get just their name and text
     return $('h1, h2, h3').map((i, element) => {
         return {
@@ -45,8 +45,8 @@ async function getStructuredData(
 // decide on keywords to check for
 async function getKeywords(
     mainPageInfo: {
-        title: string, 
-        headers: {type: string, text: string}[],
+        title: string,
+        headers: { type: string, text: string }[],
         metaDescription: string,
         bodyText: string,
         structuredData: object[]
@@ -94,8 +94,80 @@ async function getKeywords(
     }
 }
 
+async function getTopicalRelevance(
+    // define what pageInfo looks like (for typescript)
+    pageInfo:
+        {
+            title: string,
+            headers: { type: string, text: string }[],
+            metaDescription: string,
+            bodyText: string,
+            structuredData: object[]
+        }) {
+    const { title, metaDescription, headers, bodyText } = pageInfo;
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
+
+    // format the headers for the AI
+    const formattedHeaders = headers
+        .filter(h => h.type === 'h1' || h.type === 'h2' || h.type === 'h3')
+        .map(h => h.text)
+        .join(',')
+        || '';
+
+    // create the prompt asking AI about the niche of the site without using the body text
+    // this allows the prompt to be dynamic since URLs being given can be super different in terms of actual content
+    const nichePrompt = `Title: ${title || 'Untitled'}\nMeta: ${metaDescription || 'No description'}\nHeaders: ${formattedHeaders} || 'No headers'`;
+
+    try {
+        // prompt the AI for the niche of the site
+        const nicheResult = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+                {
+                    role: 'system',
+                    content: 'You’re an SEO expert. Based on a page’s title, meta description, and headers, what is its niche? Return a short phrase (ex: "supermarket equipment").',
+                },
+                { role: 'user', content: nichePrompt },
+            ],
+            max_tokens: 10,
+            temperature: 0.5, //make the answers less random
+        });
+
+        // get the niche from the API
+        const extractedNicheResult = nicheResult.choices[0].message.content;
+        const niche = extractedNicheResult !== null ? extractedNicheResult.trim() : 'No niche returned from OpenAI API...';
+
+        // create the prompt with the information to go through to check the relevance of the site
+        const relevancePrompt = `Site's niche: ${nichePrompt}\nBody (first 500 chars): ${bodyText.slice(0, 500) || 'No body text'}\n\nIs this page about "${niche}"? Rate its relevance from 0–10 (0=unrelated, 10=perfectly aligned). Return JSON: { score: number, feedback: string }`;
+
+        // now prompt the AI for a score of the relevance of the site and for a rating
+        const relevanceResult = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+                {
+                    role: 'system',
+                    content: 'You’re an SEO expert. Given a page’s title, meta description, headers, and a sample of body text, assess if it’s about a specific niche. Rate relevance from 0–10 (0=unrelated, 10=perfectly aligned). Return JSON: `{ score: number, feedback: string }`.',
+                },
+                { role: 'user', content: relevancePrompt },
+            ],
+            max_tokens: 100,
+            temperature: 0.5,
+        });
+
+        // get the relevance from the API
+        const extractedRelevanceResult = relevanceResult.choices[0].message.content;
+        const relevance  = extractedRelevanceResult !== null ? JSON.parse(extractedRelevanceResult) : 'No relevance returned from OpenAI API...';
+
+        return { niche, score: relevance.score, feedback: relevance.feedback };
+    } catch (error) {
+        console.error(error);
+        return { niche: 'website content', score: 0, feedback: 'Error assessing relevance.' };
+    }
+}
+
 export {
     getAllHeaders,
     getStructuredData,
-    getKeywords
+    getKeywords,
+    getTopicalRelevance
 };
