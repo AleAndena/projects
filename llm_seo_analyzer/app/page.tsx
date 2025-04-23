@@ -42,8 +42,15 @@ export default function Home() {
       delete context.structuredData;
       delete context.topicalRelevance;
       console.log('CONTEXT', context);
-      const formattedScoringUrl = `/api/llm-url-check/${encodeURIComponent(JSON.stringify(context))}`;
-      const scoring = await fetch(formattedScoringUrl);
+      // const formattedScoringUrl = `/api/llm-url-check/${encodeURIComponent(JSON.stringify(context))}`;
+      const scoring = await fetch('/api/llm-url-check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(context)
+      });      
+      
       const score = await scoring.json();
       
       console.log('LOGGING SCORE', score);
