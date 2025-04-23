@@ -1,54 +1,35 @@
 import OpenAI from 'openai';
+import { formatHeadersForAI } from '@/app/utils/utils';
 
 export async function GET(
     req: Request,
     { params }: {
         params: Promise<{
-            context: string // string that needs to be parsed
+            context: string // string that needs to be parsed with website information
         }>
     }
 ) {
     try {
-        const parameters = await params;
-        const context = JSON.parse(decodeURIComponent(parameters.context));
-        const { url, title, headers, metaDescription, bodyText } = context;
-
         const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
 
-        // format the headers for the AI
-        const formattedHeaders = headers
-            .filter(h => h.type === 'h1' || h.type === 'h2' || h.type === 'h3')
-            .map(h => h.text)
-            .join(',')
-            || '';
-        // format body text to not be too long
-        const formattedBodyText = bodyText.slice(0, 500);
+        // extract parameters that were passed in
+        const parameters = await params;
+        const context = JSON.parse(decodeURIComponent(parameters.context));
+        const { url, title, headers, metaDescription, bodyText, niche } = context;
 
-        // ask API for the category of the site to be used later based off context input
-        // WILL VERY LIKELY BE OPTIMIZED LATER TO NOT HAVE TO BE DONE TWICE
-        // since it is done in utils.ts in getTopicalRelevance, and now here as well
-        const nichePrompt = `Title: ${title || 'Untitled'}\nMeta description: ${metaDescription || 'No meta description'}\nHeaders: ${formattedHeaders} || 'No headers'`;
-        const nicheResult = await openai.chat.completions.create({
-            model: 'gpt-4o-mini',
-            messages: [
-                {
-                    role: 'system',
-                    content: 'You’re an SEO expert. Based on a page’s title, meta description, and headers, what is its niche? Return a short phrase (ex: supermarket equipment).',
-                },
-                { role: 'user', content: nichePrompt },
-            ],
-            max_tokens: 10,
-            temperature: 0.5,
-        });
 
-        // get the niche/category from the API
-        const extractedNicheResult = nicheResult.choices[0].message.content;
-        const niche = extractedNicheResult !== null ? extractedNicheResult.trim() : 'No niche returned from OpenAI API...';
+        // format info for the AI
+        const formattedHeaders = formatHeadersForAI(headers);
+        // const formattedBodyText = bodyText.slice(0, 500);
 
+        //context for the questions prompt so that the questions can be more accurate (MAYBE I CAN TRY WITHOUT THIS AND SEE IF THE QUESTIONS ARE STILL GOOD)
+        const contextAboutSiteForAI = `Headers: ${formattedHeaders}, meta description: ${metaDescription}, title: ${title}`;
+        
+        // < -- FOURTH PROMPT TO AI -->
+        // small-ish prompt & kinda big response (200 tokens max)
         // Generate the questions that will be used to see 
         // if the inputted URL shows up in the AI's response
-        const questionsPrompt = `Given this category/niche: "${niche}", generate 10 questions about the best tools or solutions in that category (e.g., What’s the best [niche]?). Use this context to make questions specific: ${nichePrompt}. Return only RAW JSON like this: { questions: string[] }`;
-        // do i manually add a thing asking the AI to provide links to these tools/solutions before I actually ask the AI?
+        const questionsPrompt = `Given this category/niche: "${niche}", generate 10 questions about the best tools or solutions in that category (e.g., What’s the best [niche]?). Use this context to make questions specific: ${contextAboutSiteForAI}. Return only RAW JSON like this: { questions: string[] }`;
         const questionsResult = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: [
@@ -64,9 +45,13 @@ export async function GET(
         });
         const extractedQuestionsResult = questionsResult.choices[0].message.content;
         const questions = extractedQuestionsResult !== null ? JSON.parse(extractedQuestionsResult) : 'No questions returned from OpenAI API...';
+        
+        // <-- FIFTH PROMPT TO AI -->
+        // big prompt & a very big response
         // Now ask the API all ten questions and store the
         // answers so that later we can compare the URL to the answers
-        const answersPrompt = `Answer these questions about "${niche}":\n${questions.questions.map((q: string, i: number) => `${i + 1}. ${q}`).join('\n')}\nFor each, list top 3 tools/sites (name, URL). Use this context: ${nichePrompt}\nBody (first 500 chars): ${formattedBodyText || 'No body text'}\nReturn RAW JSON with no markdown: { answers: { question: string, results: { name: string, url: string }[] }[] }`;
+        // got rid of this because I think its just too long so not necessary --> Body (first 500 chars): ${formattedBodyText || 'No body text'}\n 
+        const answersPrompt = `Answer these questions about "${niche}":\n${questions.questions.map((q: string, i: number) => `${i + 1}. ${q}`).join('\n')}\nFor each, list top 3 tools/sites (name, URL). Use this context: ${contextAboutSiteForAI}\nReturn RAW JSON with no markdown: { answers: { question: string, results: { name: string, url: string }[] }[] }`;
         const answersResult = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: [
@@ -77,7 +62,7 @@ export async function GET(
                 { role: 'user', content: answersPrompt },
             ],
             response_format: { type: "json_object" },
-            max_tokens: 2000,
+            max_tokens: 1000,
             temperature: 0.5,
         });
         const extractedAnswersResult = answersResult.choices[0].message.content;

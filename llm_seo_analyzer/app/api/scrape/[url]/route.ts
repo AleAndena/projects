@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import { getStructuredData, getAllHeaders, getKeywords, getTopicalRelevance } from '@/app/utils/utils';
+import { getStructuredData, getAllHeaders, getKeywords, getTopicalRelevance, getNicheOfSite } from '@/app/utils/utils';
 
 export async function GET(
     req: Request,
@@ -48,6 +48,9 @@ export async function GET(
             const metaDescription = $('meta[name="description"]').attr('content') || '';
             const bodyText = getCleanText($);
             const structuredData = await getStructuredData($, $("script[type='application/ld+json']"));
+            // <-- FIRST PROMPT TO AI -->
+            // small-ish prompt & very small response (10 tokens max)
+            const niche = await getNicheOfSite(title, headers, metaDescription);
 
             const placeholderObj = {
                 title,
@@ -55,10 +58,15 @@ export async function GET(
                 metaDescription,
                 bodyText,
                 structuredData,
+                // <-- SECOND PROMPT TO AI -->
+                // big prompt (bodytext incl) & medium response (100 tokens max)
                 topicalRelevance: await getTopicalRelevance({
-                    title, headers, metaDescription, bodyText, structuredData
-                })
+                    title, headers, metaDescription, bodyText, structuredData, niche
+                }),
+                niche
             };
+            // <-- THIRD PROMPT TO AI -->
+            // small-ish prompt & small response (50 tokens max)
             const keywords = await getKeywords(placeholderObj);
             console.log('KEYWORDS FROM AI', keywords);
 

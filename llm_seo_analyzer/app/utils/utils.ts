@@ -59,11 +59,7 @@ async function getKeywords(
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     // format the headers for the AI
-    const formattedHeaders = headers
-        .filter(h => h.type === 'h1' || h.type === 'h2' || h.type === 'h3')
-        .map(h => h.text)
-        .join(',')
-        || '';
+    const formattedHeaders = formatHeadersForAI(headers);
 
     // create the prompt for the API
     const prompt = `Title: ${title || 'Untitled'}\nMeta: ${metaDescription || 'No description'}\n\nH1-H2-H3: ${formattedHeaders || 'No H1-H2-H3'}`;
@@ -101,41 +97,20 @@ async function getTopicalRelevance(
             headers: { type: string, text: string }[],
             metaDescription: string,
             bodyText: string,
-            structuredData: object[]
+            structuredData: object[],
+            niche: string
         }) {
-    const { title, metaDescription, headers, bodyText } = pageInfo;
+    const { title, metaDescription, headers, bodyText, niche } = pageInfo;
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
 
     // format the headers for the AI
-    const formattedHeaders = headers
-        .filter(h => h.type === 'h1' || h.type === 'h2' || h.type === 'h3')
-        .map(h => h.text)
-        .join(',')
-        || '';
+    const formattedHeaders = formatHeadersForAI(headers);
 
     // create the prompt asking AI about the niche of the site without using the body text
     // this allows the prompt to be dynamic since URLs being given can be super different in terms of actual content
     const nichePrompt = `Title: ${title || 'Untitled'}\nMeta: ${metaDescription || 'No description'}\nHeaders: ${formattedHeaders} || 'No headers'`;
 
     try {
-        // prompt the AI for the niche of the site
-        const nicheResult = await openai.chat.completions.create({
-            model: 'gpt-4o-mini',
-            messages: [
-                {
-                    role: 'system',
-                    content: 'You’re an SEO expert. Based on a page’s title, meta description, and headers, what is its niche? Return a short phrase (ex: supermarket equipment).',
-                },
-                { role: 'user', content: nichePrompt },
-            ],
-            max_tokens: 10,
-            temperature: 0.5, //make the answers less random
-        });
-
-        // get the niche from the API
-        const extractedNicheResult = nicheResult.choices[0].message.content;
-        const niche = extractedNicheResult !== null ? extractedNicheResult.trim() : 'No niche returned from OpenAI API...';
-
         // create the prompt with the information to go through to check the relevance of the site
         const relevancePrompt = `Site's niche: ${nichePrompt}\nBody (first 500 chars): ${bodyText.slice(0, 500) || 'No body text'}\n\nIs this page about "${niche}"? Rate its relevance from 0–10 (0=unrelated, 10=perfectly aligned). Return JSON: { score: number, feedback: string }`;
 
@@ -155,7 +130,7 @@ async function getTopicalRelevance(
 
         // get the relevance from the API
         const extractedRelevanceResult = relevanceResult.choices[0].message.content;
-        const relevance  = extractedRelevanceResult !== null ? JSON.parse(extractedRelevanceResult) : 'No relevance returned from OpenAI API...';
+        const relevance = extractedRelevanceResult !== null ? JSON.parse(extractedRelevanceResult) : 'No relevance returned from OpenAI API...';
 
         return { niche, score: relevance.score, feedback: relevance.feedback };
     } catch (error) {
@@ -164,9 +139,91 @@ async function getTopicalRelevance(
     }
 }
 
+async function getNicheOfSite(
+    title: string,
+    headers: { type: string, text: string }[],
+    metaDescription: string
+): Promise<string> {
+    try {
+        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+        // format the headers for the AI
+        const formattedHeaders = formatHeadersForAI(headers);
+
+        // create the prompt asking AI about the niche of the site without using the body text
+        // this allows the prompt to be dynamic since URLs being given can be super different in terms of actual content
+        const nichePrompt = `Title: ${title || 'Untitled'}\nMeta: ${metaDescription || 'No description'}\nHeaders: ${formattedHeaders} || 'No headers'`;
+
+        // prompt the AI for the niche of the site
+        const nicheResult = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+                {
+                    role: 'system',
+                    content: 'You’re an SEO expert. Based on a page’s title, meta description, and headers, what is its niche? Return a short phrase (ex: supermarket equipment).',
+                },
+                { role: 'user', content: nichePrompt },
+            ],
+            max_tokens: 10,
+            temperature: 0.5, //make the answers less random
+        });
+
+        // get the niche from the API
+        const extractedNicheResult = nicheResult.choices[0].message.content;
+        return extractedNicheResult !== null ? extractedNicheResult.trim() : 'No niche returned from OpenAI API...';
+    } catch (error) {
+        console.error("Error getting niche from site", error);
+        return "Error while getting niche of site";
+    }
+}
+
+function formatHeadersForAI(headers: { type: string; text: string; }[]) {
+    return headers
+        .filter(h => h.type === 'h1' || h.type === 'h2' || h.type === 'h3')
+        .map(h => h.text)
+        .join(',')
+        || '';
+}
+
+async function promptToAi(systemContent: string, userContent: string, maxTokens: number, isJson: boolean) {
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
+
+    // create the settings for the prompt and give it the parameters given to the function
+    const apiConfig: any = {
+        model: 'gpt-4o-mini',
+        messages: [
+            {
+                role: 'system',
+                content: systemContent,
+            },
+            { role: 'user', content: userContent },
+        ],
+        max_tokens: maxTokens,
+        // line below may cause a problem
+        temperature: 0.5,
+    };
+    if(isJson){
+        apiConfig.response_format = { type: "json_object" };
+    }
+
+    // now ask the API the prompt and wait for an answer
+    const apiResult = await openai.chat.completions.create(apiConfig);
+
+    // extract the answer from the API's response
+    const extractedApiResult = apiResult.choices[0].message.content;
+    if(isJson){
+        return extractedApiResult !== null ? JSON.parse(extractedApiResult) : '';
+    } else {
+        return extractedApiResult !== null ? extractedApiResult.trim() : '';
+    }
+}
+
 export {
     getAllHeaders,
     getStructuredData,
     getKeywords,
-    getTopicalRelevance
+    getTopicalRelevance,
+    getNicheOfSite,
+    formatHeadersForAI,
+    promptToAi
 };
