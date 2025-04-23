@@ -27,42 +27,44 @@ export async function GET(
         // small-ish prompt & kinda big response (200 tokens max)
         // Generate the questions that will be used to see 
         // if the inputted URL shows up in the AI's response
-        const questionUserContent = `Given this category/niche: "${niche}", generate 10 questions about the best tools or solutions in that category (e.g., What’s the best [niche]?). Use this context to make questions specific: ${contextAboutSiteForAI}. Return only RAW JSON like this: { questions: string[] }`;
+        const questionUserContent = `Given this category/niche: "${niche}", generate 5 questions about the best tools or solutions in that category (e.g., What’s the best [niche]?). Use this context to make questions specific: ${contextAboutSiteForAI}. Return only RAW JSON like this: { questions: string[] }`;
         const questionSystemContent = 'You’re an SEO expert. Generate specific questions about the best tools/solutions for a category, using provided context. Return JSON.';
 
         const questionExtractedApiResult = await promptToAi(questionSystemContent, questionUserContent, 200, true);        
         const questions = questionExtractedApiResult !== null ? JSON.parse(questionExtractedApiResult) : 'No questions returned from OpenAI API...';
-        
+        console.log("QUESTIONS AFTER BEING EXTRACTED", questions);
         // <-- FIFTH PROMPT TO AI -->
         // big prompt & a very big response
         // Now ask the API all ten questions and store the
         // answers so that later we can compare the URL to the answers
         // got rid of this because I think its just too long so not necessary --> Body (first 500 chars): ${formattedBodyText || 'No body text'}\n 
-        const answersUserContent = `Answer these questions about "${niche}":\n${questions.questions.map((q: string, i: number) => `${i + 1}. ${q}`).join('\n')}\nFor each, list top 3 tools/sites (name, URL). Use this context: ${contextAboutSiteForAI}\nReturn RAW JSON with no markdown: { answers: { question: string, results: { name: string, url: string }[] }[] }`;
-        const answersSystemContent = 'You’re an SEO expert. Answer questions about a category, listing top 3 tools/sites with names and URLs. Use provided context and body text. Return JSON.';
+        const answersUserContent = `Answer these questions about "${niche}":\n${questions.questions.map((q: string, i: number) => `${i + 1}. ${q}`).join('\n')}\nFor each, list top 3 tools/sites (URLs). Use this context: ${contextAboutSiteForAI}\nReturn RAW JSON with no markdown that looks exactly like this: [{ question: string, URLs: string [] }]`;
+        const answersSystemContent = 'You’re an SEO expert. Answer questions about a category, listing URLs to the top 3 tools/sites. Use provided context and body text. Return JSON.';
 
-        const answersExtractedApiResult = await promptToAi(answersSystemContent, answersUserContent, 1000, true);
-        console.log('EXTRACTED ASNWERS FROM API', answersExtractedApiResult);
-        const answers = answersExtractedApiResult !== null ? JSON.parse(answersExtractedApiResult) : 'No answers returned from OpenAI API...';
+        const answersExtractedApiResult = await promptToAi(answersSystemContent, answersUserContent, 1000, false);
+        const answers = answersExtractedApiResult !== null ? JSON.parse(answersExtractedApiResult) : [];
+        console.log("ANSWERS after being EXTRACTED", answers);
 
+        console.log("ANSWERSSSS", answers);
         // find matches of the initial URL in the answers returned from the API
-        // `answers` VISUALIZATION: answers is an array of objects, and each of those object 
-        // has a string question and an array of objects where each object has a string name and a string url
-        const matches = answers.answers
-            .map((API_answer: { question: string, results: { name: string, url: string }[] }) => {
+        // `answers` VISUALIZATION: answers is an array of objects, where each object has a question and list of URLs (strings)
+            const matches = answers
+            .map((API_answer: { question: string, URLs: string[] }) => {
                 // above line specifies what an API_answer looks like
-                // it has string question (question being answered), and results is an array of obj with name and url
+                // it has string question (question being answered), and results is an array of url strings
                 return {
                     question: API_answer.question,
-                    answer: API_answer.results.find(result =>result.url.includes(url))?.name || '' 
+                    foundUrlMatch: API_answer.URLs.some(urlFromAi => urlFromAi.includes(url)) 
                 }
             });
-
+        console.log("MATCHES", matches);
+        
         // calculate how good the site is in terms of how much it shows up in AI responses
         const score = Math.round((matches.length / questions.length) * 100);
+        console.log("SCOREEEEE", score);
 
         // return the derived niche, questions asked, and the score and matches 
-        return Response.json({niche,questions,ranking: { score, matches }});
+        return Response.json({niche, ranking: { score, questions: matches }});
     } catch (error) {
         console.error('Error doing LLM URL scan: ', error);
     }

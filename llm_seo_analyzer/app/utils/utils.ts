@@ -163,11 +163,6 @@ async function promptToAi(systemContent: string, userContent: string, maxTokens:
 
     // extract the answer from the API's response
     return apiResult.choices[0].message.content;
-    // if(isJson){
-    //     return extractedApiResult !== null ? JSON.parse(extractedApiResult) : '';
-    // } else {
-    //     return extractedApiResult !== null ? extractedApiResult.trim() : '';
-    // }
 }
 
 export {
