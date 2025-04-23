@@ -35,10 +35,10 @@ export default function Home() {
       const response = await fetch(formattedScrapingUrl);
       const doc = await response.json();
       
-      console.log('Logged the loaded doc', doc.data[0]);
+      console.log('Logged the loaded doc', doc.data);
 
       // TESTING LLM_SPECIFIC SCORING
-      const context = Object.assign(doc.data[0], {url});
+      const context = Object.assign(doc.data, {url});
       delete context.structuredData;
       delete context.topicalRelevance;
       console.log('CONTEXT', context);

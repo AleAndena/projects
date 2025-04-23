@@ -6,78 +6,40 @@ export async function GET(
     { params }: { params: Promise<{ url: string }> }
 ) {
     try {
-        // initialize arrays
-        const arrOfCheerioAPIs = []; // gonna have the cheerioAPI and the url (for identification purposes)
-        const arrOfOtherLinks: string[] = []; // stores other urls to scrape as well
-
         // get content for the main/home page using given URL
         // put it into the API array
         const parameters = await params;
         const url = decodeURIComponent(parameters.url);
         const $ = await cheerio.fromURL(url);
-        arrOfCheerioAPIs.push($);
 
-        // check if there are any other key pages that we should also scrape
-        // if so, get the URL for them too
-        $('a').each((i, link) => {
-            const href = $(link).attr('href');
-            if (href && href.includes('about')) {
-                const fullURL = new URL(href, url).href;
-                // no duplicate links
-                if(!arrOfOtherLinks.includes(fullURL)){
-                    arrOfOtherLinks.push(fullURL)
-                }
-            }
-        });
+        // extract main page data
+        const title = $('title').text();
+        const headers = await getAllHeaders($);
+        const metaDescription = $('meta[name="description"]').attr('content') || '';
+        const bodyText = getCleanText($);
+        const structuredData = await getStructuredData($, $("script[type='application/ld+json']"));
+        
+        // <-- FIRST PROMPT TO AI -->
+        const niche = await getNicheOfSite(title, headers, metaDescription);
 
-        // loop over all the other links and do fromURL on each of them to get their content
-        const otherPagesPromises = arrOfOtherLinks.map(async link => {
-            return await cheerio.fromURL(link);
-        });
-        // process them in parallel
-        const otherPagesCheerioAPIs = await Promise.all(otherPagesPromises);
+        const pageData = {
+            title,
+            headers,
+            metaDescription,
+            bodyText,
+            structuredData,
+            niche,
+            // <-- SECOND PROMPT TO AI -->
+            topicalRelevance: await getTopicalRelevance({
+                title, headers, metaDescription, bodyText, structuredData, niche
+            }),
+        };
+        
+        // <-- THIRD PROMPT TO AI -->
+        const keywords = await getKeywords(pageData);
+        console.log('KEYWORDS FROM AI', keywords);
 
-        // then add them to arrOfCheerioAPIs so that it now has all the CheerioAPIs
-        arrOfCheerioAPIs.push(...otherPagesCheerioAPIs);
-
-        // Now, loop over each of them and get each of their information, and store it in
-        // an array of objects, where each object is a seperate page and its info
-        const pageDataPromises = arrOfCheerioAPIs.map(async ($) => {
-            const title = $('title').text();
-            const headers = await getAllHeaders($);
-            const metaDescription = $('meta[name="description"]').attr('content') || '';
-            const bodyText = getCleanText($);
-            const structuredData = await getStructuredData($, $("script[type='application/ld+json']"));
-            // <-- FIRST PROMPT TO AI -->
-            // small-ish prompt & very small response (10 tokens max)
-            const niche = await getNicheOfSite(title, headers, metaDescription);
-
-            const placeholderObj = {
-                title,
-                headers,
-                metaDescription,
-                bodyText,
-                structuredData,
-                // <-- SECOND PROMPT TO AI -->
-                // big prompt (bodytext incl) & medium response (100 tokens max)
-                topicalRelevance: await getTopicalRelevance({
-                    title, headers, metaDescription, bodyText, structuredData, niche
-                }),
-                niche
-            };
-            // <-- THIRD PROMPT TO AI -->
-            // small-ish prompt & small response (50 tokens max)
-            const keywords = await getKeywords(placeholderObj);
-            console.log('KEYWORDS FROM AI', keywords);
-
-            return placeholderObj;
-        });
-
-        // again, process them all together
-        const allPagesData = await Promise.all(pageDataPromises);
-
-        // return that array of objects where each object is a page and its info
-        return Response.json({ data: allPagesData });
+        return Response.json({ data: pageData });
     } catch (error) {
         console.error('Error loading document using URL', error);
         return Response.json({
@@ -93,7 +55,7 @@ function getCleanText($: cheerio.CheerioAPI) {
     const $clone = $('body').clone();
     $clone.find('script, style, noscript, code, pre').remove();
     return $clone.text()
-      .toLowerCase()
-      .replace(/\s+/g, ' ')
-      .slice(0, 8000);
-  }
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .slice(0, 8000);
+}
