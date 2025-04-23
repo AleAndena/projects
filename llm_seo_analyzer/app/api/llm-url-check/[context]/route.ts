@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { formatHeadersForAI } from '@/app/utils/utils';
+import { formatHeadersForAI, promptToAi } from '@/app/utils/utils';
 
 export async function GET(
     req: Request,
@@ -10,8 +10,6 @@ export async function GET(
     }
 ) {
     try {
-        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
-
         // extract parameters that were passed in
         const parameters = await params;
         const context = JSON.parse(decodeURIComponent(parameters.context));
@@ -29,45 +27,23 @@ export async function GET(
         // small-ish prompt & kinda big response (200 tokens max)
         // Generate the questions that will be used to see 
         // if the inputted URL shows up in the AI's response
-        const questionsPrompt = `Given this category/niche: "${niche}", generate 10 questions about the best tools or solutions in that category (e.g., What’s the best [niche]?). Use this context to make questions specific: ${contextAboutSiteForAI}. Return only RAW JSON like this: { questions: string[] }`;
-        const questionsResult = await openai.chat.completions.create({
-            model: 'gpt-4o-mini',
-            messages: [
-                {
-                    role: 'system',
-                    content: 'You’re an SEO expert. Generate specific questions about the best tools/solutions for a category, using provided context. Return JSON.',
-                },
-                { role: 'user', content: questionsPrompt },
-            ],
-            response_format: { type: "json_object" },
-            max_tokens: 200,
-            temperature: 0.5
-        });
-        const extractedQuestionsResult = questionsResult.choices[0].message.content;
-        const questions = extractedQuestionsResult !== null ? JSON.parse(extractedQuestionsResult) : 'No questions returned from OpenAI API...';
+        const questionUserContent = `Given this category/niche: "${niche}", generate 10 questions about the best tools or solutions in that category (e.g., What’s the best [niche]?). Use this context to make questions specific: ${contextAboutSiteForAI}. Return only RAW JSON like this: { questions: string[] }`;
+        const questionSystemContent = 'You’re an SEO expert. Generate specific questions about the best tools/solutions for a category, using provided context. Return JSON.';
+
+        const questionExtractedApiResult = await promptToAi(questionSystemContent, questionUserContent, 200, true);        
+        const questions = questionExtractedApiResult !== null ? JSON.parse(questionExtractedApiResult) : 'No questions returned from OpenAI API...';
         
         // <-- FIFTH PROMPT TO AI -->
         // big prompt & a very big response
         // Now ask the API all ten questions and store the
         // answers so that later we can compare the URL to the answers
         // got rid of this because I think its just too long so not necessary --> Body (first 500 chars): ${formattedBodyText || 'No body text'}\n 
-        const answersPrompt = `Answer these questions about "${niche}":\n${questions.questions.map((q: string, i: number) => `${i + 1}. ${q}`).join('\n')}\nFor each, list top 3 tools/sites (name, URL). Use this context: ${contextAboutSiteForAI}\nReturn RAW JSON with no markdown: { answers: { question: string, results: { name: string, url: string }[] }[] }`;
-        const answersResult = await openai.chat.completions.create({
-            model: 'gpt-4o-mini',
-            messages: [
-                {
-                    role: 'system',
-                    content: 'You’re an SEO expert. Answer questions about a category, listing top 3 tools/sites with names and URLs. Use provided context and body text. Return JSON.',
-                },
-                { role: 'user', content: answersPrompt },
-            ],
-            response_format: { type: "json_object" },
-            max_tokens: 1000,
-            temperature: 0.5,
-        });
-        const extractedAnswersResult = answersResult.choices[0].message.content;
-        console.log('EXTRACTED ASNWERS FROM API', extractedAnswersResult);
-        const answers = extractedAnswersResult !== null ? JSON.parse(extractedAnswersResult) : 'No answers returned from OpenAI API...';
+        const answersUserContent = `Answer these questions about "${niche}":\n${questions.questions.map((q: string, i: number) => `${i + 1}. ${q}`).join('\n')}\nFor each, list top 3 tools/sites (name, URL). Use this context: ${contextAboutSiteForAI}\nReturn RAW JSON with no markdown: { answers: { question: string, results: { name: string, url: string }[] }[] }`;
+        const answersSystemContent = 'You’re an SEO expert. Answer questions about a category, listing top 3 tools/sites with names and URLs. Use provided context and body text. Return JSON.';
+
+        const answersExtractedApiResult = await promptToAi(answersSystemContent, answersUserContent, 1000, true);
+        console.log('EXTRACTED ASNWERS FROM API', answersExtractedApiResult);
+        const answers = answersExtractedApiResult !== null ? JSON.parse(answersExtractedApiResult) : 'No answers returned from OpenAI API...';
 
         // find matches of the initial URL in the answers returned from the API
         // `answers` VISUALIZATION: answers is an array of objects, and each of those object 
