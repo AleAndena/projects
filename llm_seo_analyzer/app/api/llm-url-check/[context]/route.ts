@@ -4,20 +4,14 @@ export async function GET(
     req: Request,
     { params }: {
         params: Promise<{
-            context: {
-                url: string,
-                title: string,
-                headers: { type: string, text: string }[],
-                metaDescription: string,
-                bodyText: string
-            }
+            context: string // string that needs to be parsed
         }>
     }
 ) {
     try {
-        // get all parameters
         const parameters = await params;
-        const { url, title, headers, metaDescription, bodyText } = parameters.context;
+        const context = JSON.parse(decodeURIComponent(parameters.context));
+        const { url, title, headers, metaDescription, bodyText } = context;
 
         const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
 
@@ -64,15 +58,15 @@ export async function GET(
                 },
                 { role: 'user', content: questionsPrompt },
             ],
+            response_format: { type: "json_object" },
             max_tokens: 200,
             temperature: 0.5
         });
         const extractedQuestionsResult = questionsResult.choices[0].message.content;
         const questions = extractedQuestionsResult !== null ? JSON.parse(extractedQuestionsResult) : 'No questions returned from OpenAI API...';
-
         // Now ask the API all ten questions and store the
         // answers so that later we can compare the URL to the answers
-        const answersPrompt = `Answer these questions about "${niche}":\n${questions.map((q: string, i: number) => `${i + 1}. ${q}`).join('\n')}\nFor each, list top 3 tools/sites (name, URL). Use this context: ${nichePrompt}\nBody (first 500 chars): ${formattedBodyText || 'No body text'}\nReturn RAW JSON: { answers: { question: string, results: { name: string, url: string }[] }[] }`;
+        const answersPrompt = `Answer these questions about "${niche}":\n${questions.questions.map((q: string, i: number) => `${i + 1}. ${q}`).join('\n')}\nFor each, list top 3 tools/sites (name, URL). Use this context: ${nichePrompt}\nBody (first 500 chars): ${formattedBodyText || 'No body text'}\nReturn RAW JSON with no markdown: { answers: { question: string, results: { name: string, url: string }[] }[] }`;
         const answersResult = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: [
@@ -82,16 +76,18 @@ export async function GET(
                 },
                 { role: 'user', content: answersPrompt },
             ],
-            max_tokens: 1000,
+            response_format: { type: "json_object" },
+            max_tokens: 2000,
             temperature: 0.5,
         });
         const extractedAnswersResult = answersResult.choices[0].message.content;
+        console.log('EXTRACTED ASNWERS FROM API', extractedAnswersResult);
         const answers = extractedAnswersResult !== null ? JSON.parse(extractedAnswersResult) : 'No answers returned from OpenAI API...';
 
         // find matches of the initial URL in the answers returned from the API
         // `answers` VISUALIZATION: answers is an array of objects, and each of those object 
         // has a string question and an array of objects where each object has a string name and a string url
-        const matches = answers
+        const matches = answers.answers
             .map((API_answer: { question: string, results: { name: string, url: string }[] }) => {
                 // above line specifies what an API_answer looks like
                 // it has string question (question being answered), and results is an array of obj with name and url
@@ -105,7 +101,7 @@ export async function GET(
         const score = Math.round((matches.length / questions.length) * 100);
 
         // return the derived niche, questions asked, and the score and matches 
-        return {niche, questions, ranking: {score, matches}};
+        return Response.json({niche,questions,ranking: { score, matches }});
     } catch (error) {
         console.error('Error doing LLM URL scan: ', error);
     }

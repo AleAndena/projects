@@ -31,11 +31,22 @@ export default function Home() {
 
     // if url is valid, analyze the corresponding page 
     if(isValidUrl){      
-      const formattedUrl = `/api/scrape/${encodeURIComponent(url)}`;
-      const response = await fetch(formattedUrl);
+      const formattedScrapingUrl = `/api/scrape/${encodeURIComponent(url)}`;
+      const response = await fetch(formattedScrapingUrl);
       const doc = await response.json();
       
-      console.log('Logged the loaded doc', doc.data);
+      console.log('Logged the loaded doc', doc.data[0]);
+
+      // TESTING LLM_SPECIFIC SCORING
+      const context = Object.assign(doc.data[0], {url});
+      delete context.structuredData;
+      delete context.topicalRelevance;
+      console.log('CONTEXT', context);
+      const formattedScoringUrl = `/api/llm-url-check/${encodeURIComponent(JSON.stringify(context))}`;
+      const scoring = await fetch(formattedScoringUrl);
+      const score = await scoring.json();
+      
+      console.log('LOGGING SCORE', score);
     }
   }
 
