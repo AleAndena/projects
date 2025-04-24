@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import { getStructuredData, getAllHeaders, getKeywords, getTopicalRelevance, getNicheOfSite } from '@/app/utils/utils';
+import { getStructuredData, getAllHeaders, getKeywords, getTopicalRelevance, getNicheOfSite } from './utils';
 
 export async function GET(
     req: Request,
