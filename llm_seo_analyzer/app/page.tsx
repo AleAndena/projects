@@ -34,26 +34,21 @@ export default function Home() {
       const formattedScrapingUrl = `/api/scrape/${encodeURIComponent(url)}`;
       const response = await fetch(formattedScrapingUrl);
       const doc = await response.json();
-      
-      console.log('Logged the loaded doc', doc.data);
+      console.log('SCRAPED INFORMATION', doc.data);
 
-      // TESTING LLM_SPECIFIC SCORING
-      const context = Object.assign(doc.data, {url});
-      delete context.structuredData;
-      delete context.topicalRelevance;
-      console.log('CONTEXT', context);
-      // const formattedScoringUrl = `/api/llm-url-check/${encodeURIComponent(JSON.stringify(context))}`;
+      const scrapedInfoFormattedForLlmCheck = Object.assign(doc.data, {url});
+      // remove structuredData and topicalRelevance since the llm-url-check does not need that info
+      delete scrapedInfoFormattedForLlmCheck.structuredData;
+      delete scrapedInfoFormattedForLlmCheck.topicalRelevance;
       const scoring = await fetch('/api/llm-url-check', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(context)
-      });      
-      
+        body: JSON.stringify(scrapedInfoFormattedForLlmCheck)
+      });
       const score = await scoring.json();
-      
-      console.log('LOGGING SCORE', score);
+      console.log('LLM Evaluation using scraped info', score);
     }
   }
 

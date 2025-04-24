@@ -39,10 +39,6 @@ async function getAllHeaders($: cheerio.CheerioAPI): Promise<{ type: string, tex
     }).toArray();
 }
 
-// Decided not to use key page info alongside main page info because then
-// there would be so much context and it could be very expensive/inefficient and maybe even inaccurate.
-// Key page information will be used for keyword density calculation, not for giving context to the AI to 
-// decide on keywords to check for
 async function getKeywords(
     mainPageInfo: {
         title: string,
@@ -51,7 +47,7 @@ async function getKeywords(
         bodyText: string,
         structuredData: object[]
     }
-) {
+): Promise<string[]> {
     try {
         // extract all the values and assign them to variables
         const { title, metaDescription, headers } = mainPageInfo;
@@ -61,13 +57,32 @@ async function getKeywords(
 
         // create the prompt for the API
         const userContent = `Title: ${title || 'Untitled'}\nMeta: ${metaDescription || 'No description'}\n\nH1-H2-H3: ${formattedHeaders || 'No H1-H2-H3'}`;
-        const systemContent = "You're an SEO expert. Given a site's title, meta description, and H1, suggest 5 keywords seperated by commas for its niche.";
+        const systemContent = "You're an SEO expert. Given a site's title, meta description, and H1, suggest 5 keywords seperated by commas for its niche. Make sure that there are NO company names, and that they are SINGLE WORD keywords, not phrases.";
 
         const extractedApiResult = await promptToAi(systemContent, userContent, 50, false)
         return extractedApiResult !== null ? extractedApiResult.split(',').map(keyword => keyword.trim().toLowerCase()) : [];
     } catch (error) {
         console.error('OpenAI error:', error);
+        return [];
     }
+}
+
+async function getKeywordDensity(keywords: string[], bodyText: string) {
+    if (!bodyText || !keywords || keywords.length === 0) return [];
+
+    // get total num of words
+    const words = bodyText.toLowerCase().split(/\s+/).filter((word) => word.length > 0);
+    const totalWords = words.length;
+
+    // map through each keyword and get their density and count
+    return keywords.map((keyword) => {
+        // num of occurrences of the keyword in the text
+        const count = words.filter((word) => word === keyword.toLowerCase()).length;
+        // calcualte keyword density as PERCENTAGES, typical answers will be like 0.5%-2%
+        const density = Math.min((count / totalWords) * 100, 100);
+
+        return { keyword, density: Number(density.toFixed(2)), count };
+    });
 }
 
 async function getTopicalRelevance(
@@ -133,6 +148,7 @@ export {
     getStructuredData,
     getAllHeaders,
     getKeywords,
+    getKeywordDensity,
     getTopicalRelevance,
     getNicheOfSite
 };

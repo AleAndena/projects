@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import { getStructuredData, getAllHeaders, getKeywords, getTopicalRelevance, getNicheOfSite } from './utils';
+import { getStructuredData, getAllHeaders, getKeywords, getTopicalRelevance, getNicheOfSite, getKeywordDensity } from './utils';
 
 export async function GET(
     req: Request,
@@ -32,11 +32,17 @@ export async function GET(
             topicalRelevance: await getTopicalRelevance({
                 title, headers, metaDescription, bodyText, structuredData, niche
             }),
+            keywordDensity: {}
         };
         
         // <-- THIRD PROMPT TO AI -->
         const keywords = await getKeywords(pageData);
         console.log('KEYWORDS FROM AI', keywords);
+
+        const keywordDensity = await getKeywordDensity(keywords, bodyText);
+        console.log("keyword DENSITYYYY", keywordDensity);
+
+        pageData.keywordDensity = keywordDensity;
 
         return Response.json({ data: pageData });
     } catch (error) {
