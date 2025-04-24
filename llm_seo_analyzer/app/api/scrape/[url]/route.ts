@@ -38,12 +38,13 @@ export async function GET(
         // <-- THIRD PROMPT TO AI -->
         const keywords = await getKeywords(pageData);
         console.log('KEYWORDS FROM AI', keywords);
-
         const keywordDensity = await getKeywordDensity(keywords, bodyText);
-        console.log("keyword DENSITYYYY", keywordDensity);
-
+        console.log("keyword Density", keywordDensity);
+        
+        // add keyword density to the pageData object
         pageData.keywordDensity = keywordDensity;
 
+        // pass everything back to the client
         return Response.json({ data: pageData });
     } catch (error) {
         console.error('Error loading document using URL', error);

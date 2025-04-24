@@ -81,7 +81,7 @@ async function getKeywordDensity(keywords: string[], bodyText: string) {
         // calcualte keyword density as PERCENTAGES, typical answers will be like 0.5%-2%
         const density = Math.min((count / totalWords) * 100, 100);
 
-        return { keyword, density: Number(density.toFixed(2)), count };
+        return { keyword, densityAsPercent: Number(density.toFixed(2)), count };
     });
 }
 
