@@ -7,7 +7,6 @@ export async function GET(
 ) {
     try {
         // get content for the main/home page using given URL
-        // put it into the API array
         const parameters = await params;
         const url = decodeURIComponent(parameters.url);
         const $ = await cheerio.fromURL(url);
