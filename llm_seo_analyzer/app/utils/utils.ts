@@ -11,8 +11,7 @@ function formatHeadersForAI(headers: { type: string; text: string; }[]) {
 async function promptToAi(systemContent: string, userContent: string, maxTokens: number, isJson: boolean) {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
 
-    // create the settings for the prompt and give it the parameters given to the function
-    const apiConfig: any = {
+    const apiResult = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
             {
@@ -22,15 +21,9 @@ async function promptToAi(systemContent: string, userContent: string, maxTokens:
             { role: 'user', content: userContent },
         ],
         max_tokens: maxTokens,
-        // line below may cause a problem
+        response_format: isJson ? { type: "json_object" } : undefined,
         temperature: 0.5,
-    };
-    if (isJson) {
-        apiConfig.response_format = { type: "json_object" };
-    }
-
-    // now ask the API the prompt and wait for an answer
-    const apiResult = await openai.chat.completions.create(apiConfig);
+    });
 
     // extract the answer from the API's response
     return apiResult.choices[0].message.content;
