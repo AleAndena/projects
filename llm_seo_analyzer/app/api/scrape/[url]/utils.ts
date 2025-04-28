@@ -100,9 +100,7 @@ async function getTopicalRelevance(
 
     // format the headers for the AI
     const formattedHeaders = formatHeadersForAI(headers);
-
-    // create the prompt asking AI about the niche of the site without using the body text
-    // this allows the prompt to be dynamic since URLs being given can be super different in terms of actual content
+    // format the site info for the AI to go through to determine topical relevance
     const formattedSiteInfo = `Title: ${title || 'Untitled'}\nMeta: ${metaDescription || 'No description'}\nHeaders: ${formattedHeaders} || 'No headers'`;
 
     try {

@@ -36,8 +36,11 @@ export default function Home() {
       const doc = await response.json();
       console.log('SCRAPED INFORMATION', doc.data);
 
-      const scrapedInfoFormattedForLlmCheck = Object.assign(doc.data, {url});
       // remove structuredData and topicalRelevance since the llm-url-check does not need that info
+      const scrapedInfoFormattedForLlmCheck = {
+        ...doc.data,
+        url
+      };      
       delete scrapedInfoFormattedForLlmCheck.structuredData;
       delete scrapedInfoFormattedForLlmCheck.topicalRelevance;
       const scoring = await fetch('/api/llm-url-check', {
