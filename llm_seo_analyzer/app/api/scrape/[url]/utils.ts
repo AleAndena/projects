@@ -105,11 +105,33 @@ async function getTopicalRelevance(
 
     try {
         // create the prompt with the information to go through to check the relevance of the site
-        const userContent = `Site info: ${formattedSiteInfo}\nBody (first 500 chars): ${bodyText.slice(0, 500) || 'No body text'}\n\nIs this page about "${niche}"? Rate its relevance from 0–10 (0=unrelated, 10=perfectly aligned). Return JSON: { score: number, feedback: string }`;
-        const systemContent = 'You’re an SEO expert. Given a page’s title, meta description, headers, and a sample of body text, assess if it’s about a specific niche. Rate relevance from 0–10 (0=unrelated, 10=perfectly aligned). Return ONLY raw JSON without any markdown formatting or additional text, like this: {"score": number, "feedback": string}`.';
+        const userContent = `Site info: ${formattedSiteInfo}\nBody (first 500 chars): ${bodyText.slice(0, 500) || 'No body text'}\n\nIs this page about "${niche}"? Evaluate based on these CRITERIA:
+        1. Keyword alignment (0-3 points) 2. Content depth about niche (0-3 points) 3. Audience targeting match (0-2 points) 4. Commercial intent alignment (0-2 points). The SCORE value being returned is the combination of those 4 scores that you evaluated and FEEDBACK briefly discusses the scores you gave. Return JSON: { score: number, feedback: string }`;
+        const systemContent = `You’re an SEO expert. Given a page’s title, meta description, headers, and a sample of body text, assess if it’s about a specific niche. Use this as a scoring guide to decide a final score: 
+        - Keyword Alignment (0-3):
+          0: No niche keywords
+          1: Some keywords present
+          2: Good keyword coverage
+          3: Perfect keyword integration
+        - Content Depth (0-3):
+          0: No real content about niche
+          1: Briefly mentions niche
+          2: Covers multiple aspects
+          3: Comprehensive niche coverage
+        - Audience Match (0-2):
+          0: Wrong audience
+          1: Partial audience match
+          2: Perfect audience targeting
+        - Commercial Intent (0-2):
+          0: No commercial alignment
+          1: Somewhat aligned
+          2: Perfect commercial fit. 
+          The SCORE that is returned is the combination of the previous scores you evaluated. 
+          The FEEDBACK briefly discusses the scores you gave and why.
+          Return ONLY raw JSON without any markdown formatting or additional text, like this: {score: number, feedback: string}`;
 
         // now prompt the AI for a score of the relevance of the site and for a rating
-        const extractedApiResult = await promptToAi(systemContent, userContent, 100, true);
+        const extractedApiResult = await promptToAi(systemContent, userContent, 300, true);
         const relevance = extractedApiResult !== null ? JSON.parse(extractedApiResult) : '';
 
         // return obj with niche, score and feedback
