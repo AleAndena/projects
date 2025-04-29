@@ -61,7 +61,7 @@ export async function POST(req: Request) {
         const score = Math.round((numOfMatches / questions.length) * 100);
 
         // return the derived niche, questions asked, and the score and matches 
-        return Response.json({ niche, ranking: { score, questions: questionsAndIsMatch } });
+        return Response.json({ url, niche, ranking: { score, questions: questionsAndIsMatch } });
     } catch (error) {
         console.error('Error doing LLM URL scan: ', error);
     }

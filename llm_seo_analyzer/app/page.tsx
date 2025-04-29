@@ -1,8 +1,11 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function Home() {
+  const router = useRouter();
+
   const [url, setUrl] = useState('');
   const [isValid, setIsValid] = useState(false);
   const [clickedSubmit, setClickedSubmit] = useState(false);
@@ -31,18 +34,21 @@ export default function Home() {
 
     // if url is valid, analyze the corresponding page 
     if(isValidUrl){      
+      // get an object containing the scraped information of the site
       const formattedScrapingUrl = `/api/scrape/${encodeURIComponent(url)}`;
       const response = await fetch(formattedScrapingUrl);
       const doc = await response.json();
       console.log('SCRAPED INFORMATION', doc.data);
 
-      // remove structuredData and topicalRelevance since the llm-url-check does not need that info
+      // remove structuredData and topicalRelevance since the llm-url-check does not need that info so no need to send it
       const scrapedInfoFormattedForLlmCheck = {
         ...doc.data,
         url
       };      
       delete scrapedInfoFormattedForLlmCheck.structuredData;
       delete scrapedInfoFormattedForLlmCheck.topicalRelevance;
+
+      // make a request to the LLM-URL-checker to get an evaluation (returns an object)
       const scoring = await fetch('/api/llm-url-check', {
         method: 'POST',
         headers: {
@@ -52,6 +58,9 @@ export default function Home() {
       });
       const score = await scoring.json();
       console.log('LLM Evaluation using scraped info', score);
+
+      // send the user to the analysis page to show them all the info
+      router.push(`/analysis/${encodeURIComponent(JSON.stringify(score))}`);
     }
   }
 
