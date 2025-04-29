@@ -45,7 +45,8 @@ export async function POST(req: Request) {
 
                     return {
                         question: API_answer.question,
-                        foundUrlMatch: hasMatch
+                        foundUrlMatch: hasMatch,
+                        llmRecommendedUrls: API_answer.URLs
                     };
                 } catch {
                     return {
