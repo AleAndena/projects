@@ -57,8 +57,8 @@ export default function Analysis() {
 
   // Helper function to render color based on score
   const getScoreColor = (score: number) => {
-    if (score >= 8) return 'text-green-700';
-    if (score >= 6) return 'text-yellow-700';
+    if (score >= 2) return 'text-green-700';
+    if (score >= 1) return 'text-yellow-700';
     return 'text-red-700';
   };
 
@@ -100,7 +100,7 @@ export default function Analysis() {
             <div className="flex items-baseline">
               <span className="text-4xl font-bold mr-2 my-2 inline-block">
                 <span className={getScoreColor(llmEvaluation.ranking.score)}>
-                  {llmEvaluation.ranking.score}/10
+                  {llmEvaluation.ranking.score}/5
                 </span>
               </span>
               <span className="text-gray-700">Overall Score</span>
@@ -123,7 +123,7 @@ export default function Analysis() {
                         <span className="font-semibold text-gray-900">Recommended URLs:</span>
                         <ul className="list-disc pl-5 mt-1">
                           {q.llmRecommendedUrls.map((url: string, idx: number) => (
-                            <li key={idx} className="text-gray-800 text-xs break-all">{url}</li>
+                            <li key={idx} className="text-gray-800 text-sm break-all">{url}</li>
                           ))}
                         </ul>
                       </div>
@@ -151,6 +151,8 @@ export default function Analysis() {
 
                 <div className="mt-3">
                   <p className="font-medium text-gray-900">Niche: <span className="font-normal text-gray-700">{topicalRelevance.niche}</span></p>
+                  <br></br>
+                  <h3 className="font-normal text-gray-700">Feedback message from AI:</h3>
                   <p className="mt-3 text-sm text-gray-700">{topicalRelevance.feedback}</p>
                 </div>
               </div>

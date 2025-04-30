@@ -58,10 +58,9 @@ export async function POST(req: Request) {
         
         // calculate how good the site is in terms of how much it shows up in AI responses
         const numOfMatches = questionsAndIsMatch.filter((questionAndIsMatch: { question: string, foundUrlMatch: boolean; }) => questionAndIsMatch.foundUrlMatch === true).length;
-        const score = Math.round((numOfMatches / questions.length) * 100);
 
         // return the derived niche, questions asked, and the score and matches 
-        return Response.json({ url, niche, ranking: { score, questions: questionsAndIsMatch } });
+        return Response.json({ url, niche, ranking: { score: numOfMatches, questions: questionsAndIsMatch } });
     } catch (error) {
         console.error('Error doing LLM URL scan: ', error);
     }

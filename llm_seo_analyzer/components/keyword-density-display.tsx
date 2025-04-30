@@ -7,7 +7,7 @@ export function KeywordDensityDisplay(
         if (density >= 2.5) {
             return "Too high - may be seen as keyword stuffing";
         } else if (density >= 2.0 && density < 2.5) {
-            return "Getting high - consider reducing slightly";
+            return "Getting high - consider possibly reducing slightly";
         } else if (density >= 1.75 && density < 2.0) {
             return "Good, but on the higher side";
         } else if (density >= 1.25 && density < 1.75) {
@@ -23,16 +23,15 @@ export function KeywordDensityDisplay(
 
     // Get text color based on density percentage
     const getTextColor = (density: number) => {
-        if (density >= 2.5 || density < 0.5) {
-            return 'text-red-700';
-        } else if ((density >= 2.0 && density < 2.5) || (density >= 0.5 && density < 1.0)) {
-            return 'text-yellow-700';
-        } else if ((density >= 1.75 && density < 2.0) || (density >= 1.0 && density < 1.25)) {
-            return 'text-yellow-600';
-        } else {
-            return 'text-green-700';
-        }
+        if (density >= 2.5) return 'text-red-700';
+        if (density >= 2.25) return 'text-yellow-700';
+        if (density >= 1.9) return 'text-yellow-500';
+        if (density >= 1.1) return 'text-green-600';
+        if (density >= 0.75) return 'text-yellow-500';
+        if (density >= 0.5) return 'text-yellow-700';
+        return 'text-red-700';
     };
+    
 
     // Create segments for the density bar (total of 30 segments)
     const MAX_SEGMENTS = 30;
@@ -40,13 +39,13 @@ export function KeywordDensityDisplay(
 
     // Get segment colors based on position in the spectrum
     const getSegmentColor = (index: number) => {
-        const segmentValue = (index / MAX_SEGMENTS) * MAX_DENSITY;
+        const segmentValue = (( index + 1 ) / MAX_SEGMENTS) * MAX_DENSITY;
 
         if (segmentValue >= 2.5) return 'bg-red-700';
-        if (segmentValue >= 2.0) return 'bg-yellow-700';
-        if (segmentValue >= 1.75) return 'bg-yellow-500';
-        if (segmentValue >= 1.25) return 'bg-green-600';
-        if (segmentValue >= 1.0) return 'bg-yellow-500';
+        if (segmentValue >= 2.25) return 'bg-yellow-700';
+        if (segmentValue >= 1.9) return 'bg-yellow-500';
+        if (segmentValue >= 1.1) return 'bg-green-600';
+        if (segmentValue >= 0.75) return 'bg-yellow-500';
         if (segmentValue >= 0.5) return 'bg-yellow-700';
         return 'bg-red-700';
     };
@@ -78,7 +77,7 @@ export function KeywordDensityDisplay(
             </div>
 
             {/* Feedback message */}
-            <div className={`text-xs mt-1 ${textColor}`}>
+            <div className={`text-sm mt-1 ${textColor}`}>
                 {feedbackMessage}
             </div>
         </div>
