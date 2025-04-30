@@ -11,6 +11,7 @@ export default function Analysis() {
   const [scrapedInfo, setScrapedInfo] = useState<scrapedInfo | null>(null);
   const [llmEvaluation, setLlmEvaluation] = useState<LLMEvaluation | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showCompletion, setShowCompletion] = useState(false);
 
   // decode the URL that was inputted and passed from the form
   const decodedUrl = decodeURIComponent(params.url as string);
@@ -19,6 +20,7 @@ export default function Analysis() {
     async function scrapeAndAnalyze() {
       try {
         setLoading(true);
+        setShowCompletion(false);
         // get an object containing the scraped information of the site
         const formattedScrapingUrl = `/api/scrape/${encodeURIComponent(decodedUrl)}`;
         const response = await fetch(formattedScrapingUrl);
@@ -45,6 +47,10 @@ export default function Analysis() {
         const score = await scoring.json();
         console.log('LLM Evaluation using scraped info', score);
         setLlmEvaluation(score);
+        setShowCompletion(true);
+
+        // Wait 1.5 seconds before showing full analysis for smoother transition between loading screen and analysis
+        await new Promise(resolve => setTimeout(resolve, 1500));
       } catch (error) {
         console.error('Error in scraping and analysis:', error);
       } finally {
@@ -64,11 +70,70 @@ export default function Analysis() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
-          <h2 className="mt-4 text-xl font-semibold">Analyzing your URL...</h2>
-          <p className="mt-2 text-gray-600">This may take a moment while we analyze the content.</p>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center max-w-md px-4">
+          {/* Animated spinner */}
+          <div className="relative mx-auto h-16 w-16 mb-6">
+            <div className="animate-spin rounded-full h-full w-full border-t-2 border-b-2 border-blue-500 border-opacity-30"></div>
+            <div
+              className="absolute top-0 left-0 h-full w-full animate-spin rounded-full border-t-2 border-blue-600 border-opacity-80"
+              style={{ animationDuration: '2s' }}
+            ></div>
+            <svg
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-600"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+            </svg>
+          </div>
+
+          {/* Progress bar */}
+          <div className="mb-8 w-full bg-gray-200 rounded-full h-2">
+            <div
+              className="bg-blue-600 h-2 rounded-full transition-all duration-500 ease-out"
+              style={{
+                width: `${!scrapedInfo ? '33%' : !llmEvaluation ? '66%' : '100%'}`
+              }}
+            ></div>
+          </div>
+
+          {/* Combined step indicators */}
+          <div className="space-y-4 text-center">
+            {/* Scraping step */}
+            <div className={`flex items-center justify-center gap-2 ${!scrapedInfo ? 'text-gray-900 font-bold text-lg' : 'text-gray-600'}`}>
+              {scrapedInfo ? (
+                <span className="text-green-500">✓</span>
+              ) : (
+                <span className="animate-bounce">🕵️</span>
+              )}
+              <span>Scraping site content</span>
+            </div>
+
+            {/* Analysis step */}
+            <div className={`flex items-center justify-center gap-2 ${scrapedInfo && !llmEvaluation ? 'text-gray-900 font-bold text-lg' : 'text-gray-600'}`}>
+              {llmEvaluation ? (
+                <span className="text-green-500">✓</span>
+              ) : scrapedInfo ? (
+                <span className="animate-pulse">🧠</span>
+              ) : null}
+              <span>Running AI analysis</span>
+            </div>
+
+            {/* Completion step */}
+            <div className={`flex items-center justify-center gap-2 ${showCompletion ? 'text-gray-900 font-bold text-lg' : 'text-gray-400'}`}>
+              {showCompletion ? (
+                <span className="animate-bounce">✅</span>
+              ) : (
+                <span className="opacity-0">✓</span>
+              )}
+              <span>Analysis complete</span>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -89,7 +154,26 @@ export default function Analysis() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Analysis for: {decodedUrl}</h1>
+      <h1 className="text-3xl font-bold mb-6">Analysis for: <a
+        href={decodedUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="
+        font-medium
+        bg-gradient-to-r from-blue-600 to-blue-400
+        bg-clip-text text-transparent
+        hover:from-blue-500 hover:to-blue-300
+        transition-all duration-300
+        relative
+        group
+      "
+      >{decodedUrl}<span className="
+    absolute left-0 -bottom-0.5
+    w-full h-0.5
+    bg-gradient-to-r from-blue-400/70 to-blue-600/70
+    transform origin-left scale-x-0 group-hover:scale-x-100
+    transition-transform duration-300 ease-out
+  " /></a></h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* LLM Evaluation Section */}
@@ -111,15 +195,16 @@ export default function Analysis() {
             <h3 className="font-semibold mb-2 text-gray-900">Evaluation Questions:</h3>
             <div className="space-y-4">
               {llmEvaluation.ranking.questions.map((q, i) => (
-                <div key={i} className="border-l-4 border-blue-600 pl-3">
+                <div key={i} className="border-l-6 border-blue-600 pl-3">
                   <p className="font-medium text-gray-900">{q.question}</p>
                   <div className="mt-2 text-sm">
                     <p className="text-gray-700">
-                      <span className="font-semibold">Match found: </span>
+                      <span className="font-semibold">Was your URL recommended by the AI when answering that question: </span>
                       {q.foundUrlMatch ? "Yes" : "No"}
                     </p>
                     {q.llmRecommendedUrls.length > 0 && (
                       <div className="mt-1">
+                        <br></br>
                         <span className="font-semibold text-gray-900">Recommended URLs:</span>
                         <ul className="list-disc pl-5 mt-1">
                           {q.llmRecommendedUrls.map((url: string, idx: number) => (
@@ -195,7 +280,7 @@ interface LLMEvaluation {
 
 interface scrapedInfo {
   bodyText: string,
-  headers: [{type: string, text: string}],
+  headers: [{ type: string, text: string }],
   keywordDensity: [keywordDensityObj],
   metaDescription: string,
   niche: string,
