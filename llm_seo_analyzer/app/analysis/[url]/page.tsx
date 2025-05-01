@@ -4,6 +4,8 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { KeywordDensityDisplay } from '@/components/keyword-density-display';
 import { LoadingAnalysis } from '@/components/loading-analysis';
+import { StrengthsWeaknesses } from '@/components/strengths-weaknesses';
+import { determineStrengthsAndWeaknesses } from './utils';
 
 export default function Analysis() {
   const params = useParams();
@@ -13,6 +15,10 @@ export default function Analysis() {
   const [llmEvaluation, setLlmEvaluation] = useState<LLMEvaluation | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCompletion, setShowCompletion] = useState(false);
+  const [analysisResults, setAnalysisResults] = useState<{ strengths: any[], weaknesses: any[] }>({
+    strengths: [],
+    weaknesses: []
+  });
 
   // decode the URL that was inputted and passed from the form
   const decodedUrl = decodeURIComponent(params.url as string);
@@ -49,6 +55,15 @@ export default function Analysis() {
         console.log('LLM Evaluation using scraped info', score);
         setLlmEvaluation(score);
         setShowCompletion(true);
+
+        // Calculate strengths and weaknesses once we have all the data
+        if (doc.data && score) {
+          const results = determineStrengthsAndWeaknesses({
+            scrapedInfo: doc.data,
+            llmEvaluation: score
+          });
+          setAnalysisResults(results);
+        }
 
         // Wait 1 second before showing full analysis for smoother transition between loading screen and analysis
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -200,6 +215,12 @@ export default function Analysis() {
           )}
         </div>
       </div>
+
+      {/* Strengths and Weaknesses Analysis */}
+      <StrengthsWeaknesses 
+        strengths={analysisResults.strengths}
+        weaknesses={analysisResults.weaknesses} 
+      />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-function determineStrengthsAndWeaknesses(
+export function determineStrengthsAndWeaknesses(
     { scrapedInfo, llmEvaluation }:
     { scrapedInfo: scrapedInfo, llmEvaluation: LLMEvaluation }
 ) {
@@ -140,4 +140,8 @@ function determineStrengthsAndWeaknesses(
         });
     }
 
+    return {
+        strengths: arrOfStrengths,
+        weaknesses: arrOfWeaknesses
+    }
 }
