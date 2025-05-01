@@ -50,8 +50,8 @@ export default function Analysis() {
         setLlmEvaluation(score);
         setShowCompletion(true);
 
-        // Wait 1.5 seconds before showing full analysis for smoother transition between loading screen and analysis
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Wait 1 second before showing full analysis for smoother transition between loading screen and analysis
+        await new Promise(resolve => setTimeout(resolve, 1000));
       } catch (error) {
         console.error('Error in scraping and analysis:', error);
       } finally {
@@ -202,40 +202,4 @@ export default function Analysis() {
       </div>
     </div>
   );
-}
-
-// interfaces to define what things look like above
-interface LLMEvaluation {
-  ranking: {
-    score: number;
-    questions: {
-      question: string;
-      foundUrlMatch: boolean;
-      llmRecommendedUrls: string[];
-    }[];
-  };
-}
-
-interface scrapedInfo {
-  bodyText: string,
-  headers: [{ type: string, text: string }],
-  keywordDensity: [keywordDensityObj],
-  metaDescription: string,
-  niche: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  structuredData: any[],
-  title: string,
-  topicalRelevance: topicalRelevance
-}
-
-interface topicalRelevance {
-  feedback: string,
-  niche: string,
-  score: number
-}
-
-interface keywordDensityObj {
-  keyword: string,
-  densityAsPercent: number,
-  count: number
 }
