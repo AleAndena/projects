@@ -106,7 +106,7 @@ export default function Analysis() {
   const keywordDensity: [keywordDensityObj] = scrapedInfo.keywordDensity;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div id="analysis-page" className="p-6 max-w-4xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">Analysis for: <a
         href={decodedUrl}
         target="_blank"
