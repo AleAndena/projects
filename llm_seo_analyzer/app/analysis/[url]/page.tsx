@@ -1,5 +1,4 @@
 "use client";
-
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { KeywordDensityDisplay } from '@/components/keyword-density-display';
@@ -7,10 +6,8 @@ import { LoadingAnalysis } from '@/components/loading-analysis';
 import { StrengthsWeaknesses } from '@/components/strengths-weaknesses';
 import { determineStrengthsAndWeaknesses } from './utils';
 import { getPDF } from '@/app/utils/utils';
-
 export default function Analysis() {
   const params = useParams();
-
   // interfaces/types are at the bottom of the page
   const [scrapedInfo, setScrapedInfo] = useState<scrapedInfo | null>(null);
   const [llmEvaluation, setLlmEvaluation] = useState<LLMEvaluation | null>(null);
@@ -20,10 +17,8 @@ export default function Analysis() {
     strengths: [],
     weaknesses: []
   });
-
   // decode the URL that was inputted and passed from the form
   const decodedUrl = decodeURIComponent(params.url as string);
-
   useEffect(() => {
     async function scrapeAndAnalyze() {
       try {
@@ -35,7 +30,6 @@ export default function Analysis() {
         const doc = await response.json();
         console.log('SCRAPED INFORMATION', doc.data);
         setScrapedInfo(doc.data);
-
         // remove structuredData and topicalRelevance since the llm-url-check does not need that info
         const scrapedInfoFormattedForLlmCheck = {
           ...doc.data,
@@ -43,7 +37,6 @@ export default function Analysis() {
         };
         delete scrapedInfoFormattedForLlmCheck.structuredData;
         delete scrapedInfoFormattedForLlmCheck.topicalRelevance;
-
         // make a request to the LLM-URL-checker to get an evaluation
         const scoring = await fetch('/api/llm-url-check', {
           method: 'POST',
@@ -56,7 +49,6 @@ export default function Analysis() {
         console.log('LLM Evaluation using scraped info', score);
         setLlmEvaluation(score);
         setShowCompletion(true);
-
         // Calculate strengths and weaknesses once we have all the data
         if (doc.data && score) {
           const results = determineStrengthsAndWeaknesses({
@@ -65,7 +57,6 @@ export default function Analysis() {
           });
           setAnalysisResults(results);
         }
-
         // Wait 1 second before showing full analysis for smoother transition between loading screen and analysis
         await new Promise(resolve => setTimeout(resolve, 1000));
       } catch (error) {
@@ -74,17 +65,14 @@ export default function Analysis() {
         setLoading(false);
       }
     }
-
     scrapeAndAnalyze();
   }, [decodedUrl]);
-
   // Helper function to render color based on score
   const getScoreColor = (score: number) => {
     if (score >= 2) return 'text-green-700';
     if (score >= 1) return 'text-yellow-700';
     return 'text-red-700';
   };
-
   if (loading) {
     return <LoadingAnalysis
       scrapedInfo={scrapedInfo}
@@ -92,7 +80,6 @@ export default function Analysis() {
       showCompletion={showCompletion}
     />
   }
-
   if (!llmEvaluation || !scrapedInfo) {
     return (
       <div className="p-6 max-w-4xl mx-auto">
@@ -102,55 +89,54 @@ export default function Analysis() {
       </div>
     );
   }
-
   const topicalRelevance: topicalRelevance = scrapedInfo.topicalRelevance;
   const keywordDensity: [keywordDensityObj] = scrapedInfo.keywordDensity;
-
   return (
     <div id="analysis-page" className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Analysis for: <a
-        href={decodedUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="
-        font-medium
-        bg-gradient-to-r from-blue-600 to-blue-400
-        bg-clip-text text-transparent
-        hover:from-blue-500 hover:to-blue-300
-        transition-all duration-300
-        relative
-        group
-      "
-      >{decodedUrl}<span className="
-    absolute left-0 -bottom-0.5
-    w-full h-0.5
-    bg-gradient-to-r from-blue-400/70 to-blue-600/70
-    transform origin-left scale-x-0 group-hover:scale-x-100
-    transition-transform duration-300 ease-out
-  " /></a></h1>
-      <button
-        id="get-pdf-button"
-        className="
-            bg-gradient-to-r from-blue-600 to-blue-400
-            text-white
-            font-medium
-            px-4 py-2
-            rounded-lg
-            shadow-md
-            hover:from-blue-500 hover:to-blue-300
-            transition-all duration-300
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
-          "
-          onClick={getPDF}
-      >
-        Download PDF
-      </button>
-
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Analysis for: <a
+          href={decodedUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="
+          font-medium
+          bg-gradient-to-r from-blue-600 to-blue-400
+          bg-clip-text text-transparent
+          hover:from-blue-500 hover:to-blue-300
+          transition-all duration-300
+          relative
+          group
+        "
+        >{decodedUrl}<span className="
+      absolute left-0 -bottom-0.5
+      w-full h-0.5
+      bg-gradient-to-r from-blue-400/70 to-blue-600/70
+      transform origin-left scale-x-0 group-hover:scale-x-100
+      transition-transform duration-300 ease-out
+    " /></a></h1>
+        <button
+          id="get-pdf-button"
+          className="
+              bg-gradient-to-r from-blue-600 to-blue-400
+              text-white
+              font-medium
+              px-4 py-2
+              rounded-lg
+              shadow-md
+              hover:from-blue-500 hover:to-blue-300
+              transition-all duration-300
+              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
+              ml-4
+            "
+            onClick={getPDF}
+        >
+          Download PDF
+        </button>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* LLM Evaluation Section */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4 text-gray-900">LLM Evaluation</h2>
-
           <div className="mb-4">
             <div className="flex items-baseline">
               <span className="text-4xl font-bold mr-2 my-2 inline-block">
@@ -161,7 +147,6 @@ export default function Analysis() {
               <span className="text-gray-700">Overall Score</span>
             </div>
           </div>
-
           <div className="mt-6">
             <h3 className="font-semibold mb-2 text-gray-900">Evaluation Questions:</h3>
             <div className="space-y-4">
@@ -190,7 +175,6 @@ export default function Analysis() {
             </div>
           </div>
         </div>
-
         {/* Topical Relevance and Keyword Density */}
         <div className="space-y-6">
           {/* Topical Relevance */}
@@ -204,7 +188,6 @@ export default function Analysis() {
                   </span>
                   <span className="text-gray-700">Relevance Score</span>
                 </div>
-
                 <div className="mt-3">
                   <p className="font-medium text-gray-900">Niche: <span className="font-normal text-gray-700">{topicalRelevance.niche}</span></p>
                   <br></br>
@@ -214,7 +197,6 @@ export default function Analysis() {
               </div>
             </div>
           )}
-
           {/* Keyword Density */}
           {keywordDensity && keywordDensity.length > 0 && (
             <div className="bg-white p-6 rounded-lg shadow-md">
@@ -233,7 +215,6 @@ export default function Analysis() {
           )}
         </div>
       </div>
-
       {/* Strengths and Weaknesses Analysis */}
       <StrengthsWeaknesses 
         strengths={analysisResults.strengths}
