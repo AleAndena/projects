@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
 
 function formatHeadersForAI(headers: { type: string; text: string; }[]) {
@@ -31,40 +31,53 @@ async function promptToAi(systemContent: string, userContent: string, maxTokens:
     return apiResult.choices[0].message.content;
 }
 
-export {
-    formatHeadersForAI,
-    promptToAi
-};
-
 // Source of logic for making the PDF:
 // https://blog.risingstack.com/pdf-from-html-node-js-puppeteer/
 function getPDF() {
-    try{
+    try {
         const domElement = document.getElementById('analysis-page');
         const pdfButton = document.getElementById('get-pdf-button');
-    
+
         if (!pdfButton || !domElement) {
             throw new Error("Could not find `analysis-page` or `get-pdf-button` element");
         }
-    
+
         html2canvas(domElement, {
-            onclone: (document) => {
+            onclone: () => {
                 pdfButton.style.visibility = 'hidden';
             }
         })
-        .then((canvas) => {
-            const img = canvas.toDataURL('image/png');
-            const pdf = new jsPDF();
+            .then((canvas) => {
+                // convert content to a PNG
+                const imgData = canvas.toDataURL('image/png');
 
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
+                // get dimensions of the canvas (the captured area)
+                const imgWidthPx = canvas.width;
+                const imgHeightPx = canvas.height;
 
-            pdf.addImage(img, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save('LLM-SEO-analysis.pdf');
-        })
+                // Set the PDF width to 210mm
+                const pdfWidth = 210;
 
-    }catch(error){
+                // Calculate num of pixels per mm based on image width
+                const pxPerMm = imgWidthPx / pdfWidth;
+
+                // Get the PDF height so the entire image fits in the PDF properly without being cut off
+                const pdfHeight = imgHeightPx / pxPerMm;
+
+                // Create the PDF doc with the dimensions gotten above
+                const pdf = new jsPDF('p', 'mm', [pdfWidth, pdfHeight]);
+
+                // Add the image to the PDF then download it
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save('analysis.pdf');
+            });
+    } catch (error) {
         console.error(error);
     }
-    
 }
+
+export {
+    formatHeadersForAI,
+    promptToAi,
+    getPDF
+};
