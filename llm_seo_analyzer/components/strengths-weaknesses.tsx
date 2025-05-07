@@ -5,6 +5,9 @@ import { useState } from 'react';
 export function StrengthsWeaknesses ({ 
   strengths, 
   weaknesses 
+}: {
+  strengths: strengthWeakness[],
+  weaknesses: strengthWeakness[]
 }) {
   const [activeTab, setActiveTab] = useState('strengths');
 
@@ -40,7 +43,7 @@ export function StrengthsWeaknesses ({
       <div className="space-y-4">
         {activeTab === 'strengths' ? (
           strengths.length > 0 ? (
-            strengths.map((item, index) => (
+            strengths.map((item, index: number) => (
               <div key={index} className="border-l-4 border-green-600 pl-4 py-2 bg-green-50 rounded-r-lg">
                 <h3 className="font-medium text-gray-900">{item.name}</h3>
                 <p className="text-sm text-gray-700 mt-1">{item.message}</p>
@@ -51,7 +54,7 @@ export function StrengthsWeaknesses ({
           )
         ) : (
           weaknesses.length > 0 ? (
-            weaknesses.map((item, index) => (
+            weaknesses.map((item, index: number) => (
               <div key={index} className="border-l-4 border-red-600 pl-4 py-2 bg-red-50 rounded-r-lg">
                 <h3 className="font-medium text-gray-900">{item.name}</h3>
                 <p className="text-sm text-gray-700 mt-1">{item.message}</p>

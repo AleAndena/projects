@@ -32,3 +32,8 @@ interface topicalRelevance {
     niche: string,
     score: number
 }
+
+interface strengthWeakness {
+        name: string;
+        message: string;
+}

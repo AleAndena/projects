@@ -13,7 +13,7 @@ export default function Analysis() {
   const [llmEvaluation, setLlmEvaluation] = useState<LLMEvaluation | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCompletion, setShowCompletion] = useState(false);
-  const [analysisResults, setAnalysisResults] = useState<{ strengths: any[], weaknesses: any[] }>({
+  const [analysisResults, setAnalysisResults] = useState<{ strengths: strengthWeakness[], weaknesses: strengthWeakness[] }>({
     strengths: [],
     weaknesses: []
   });
@@ -128,7 +128,7 @@ export default function Analysis() {
               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
               ml-4
             "
-            onClick={getPDF}
+          onClick={getPDF}
         >
           Download PDF
         </button>
@@ -216,9 +216,9 @@ export default function Analysis() {
         </div>
       </div>
       {/* Strengths and Weaknesses Analysis */}
-      <StrengthsWeaknesses 
+      <StrengthsWeaknesses
         strengths={analysisResults.strengths}
-        weaknesses={analysisResults.weaknesses} 
+        weaknesses={analysisResults.weaknesses}
       />
     </div>
   );
