@@ -11,10 +11,15 @@ export default function Home() {
   const [clickedSubmit, setClickedSubmit] = useState(false);
 
   // check if input is a valid URL
-  function validateURL(input: string): boolean{
+  function validateURL(): boolean{
     // idea taken from: https://medium.com/@tariibaba/javascript-check-if-string-is-url-ddf98d50060a
     try{
-      new URL(input);
+      let urlToCheck = url;
+      if(!url.includes("https://")){
+        urlToCheck = "https://" + urlToCheck;
+      }
+      
+      new URL(urlToCheck);
       return true;
     } catch (error){
       console.error(error);
@@ -29,13 +34,18 @@ export default function Home() {
     setClickedSubmit(true);
 
     // check if new url is valid
-    const isValidUrl = validateURL(url);
+    const isValidUrl = validateURL();
     setIsValid(isValidUrl);
 
     // if url is valid, analyze the corresponding page 
     if(isValidUrl){      
+      let urlToCheck = url;
+      if(!url.includes("https://")){
+        urlToCheck = "https://" + urlToCheck;
+      }
+
       // send the user to the analysis page to show them all the info
-      router.push(`/analysis/${encodeURIComponent(url)}`);
+      router.push(`/analysis/${encodeURIComponent(urlToCheck)}`);
     }
   }
 
@@ -64,7 +74,7 @@ export default function Home() {
               }`}
             />
             {!isValid && clickedSubmit && (
-              <p className="mt-1 text-sm text-red-400">Please enter a valid URL (e.g., https://example.com)</p>
+              <p className="mt-1 text-sm text-red-400">Please enter a valid URL (e.g., https://example.com, example.com)</p>
             )}
           </div>
           
