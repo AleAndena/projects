@@ -19,6 +19,7 @@ export default function Home() {
       let urlToCheck = url;
       if(!url.includes("https://")){
         urlToCheck = "https://" + urlToCheck;
+        setUrl(urlToCheck);
       }
       
       new URL(urlToCheck);

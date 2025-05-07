@@ -117,12 +117,12 @@ export function determineStrengthsAndWeaknesses(
     if (topRel && topRel.score >= 6) {
         arrOfStrengths.push({
             name: "Topical Relevance: An AI analysis where we ask the LLM to determine how well the site conveys the main subject and aligns with the topic",
-            message: `Feedback message from AI: ${topRel.feedback}`
+            message: `At the top of the page, you can find the feedback from AI about the Topical Relevance of your site.`
         });
     } else {
         arrOfWeaknesses.push({
             name: "Content Relevance",
-            message: `The content may not fully align with your target topic. AI feedback: ${topRel.feedback}`
+            message: `The content may not fully align with your target topic. At the top of the page, you can find the feedback from AI about the Topical Relevance of your site.`
         });
     }
 
