@@ -14,6 +14,8 @@ export default function Home() {
   function validateURL(): boolean{
     // idea taken from: https://medium.com/@tariibaba/javascript-check-if-string-is-url-ddf98d50060a
     try{
+      // add a check to see if it already has `https://` or not
+      // ideally we just do `setUrl()` with the fixed URL then use `url`, but react doesn't let us do that for performance reasons
       let urlToCheck = url;
       if(!url.includes("https://")){
         urlToCheck = "https://" + urlToCheck;
@@ -39,6 +41,7 @@ export default function Home() {
 
     // if url is valid, analyze the corresponding page 
     if(isValidUrl){      
+      // add a check to see if it already has `https://` or not
       let urlToCheck = url;
       if(!url.includes("https://")){
         urlToCheck = "https://" + urlToCheck;
