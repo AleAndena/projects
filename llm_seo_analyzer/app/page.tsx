@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { determineStrengthsAndWeaknesses } from "./analysis/[url]/utils";
+import { determineStrengthsAndWeaknesses } from "./utils/utils";
 import { getPDF, getScoreColor } from "./utils/utils";
 import { StrengthsWeaknesses } from "@/components/strengths-weaknesses";
 import { KeywordDensityDisplay } from "@/components/keyword-density-display";
