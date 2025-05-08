@@ -76,8 +76,16 @@ function getPDF() {
     }
 }
 
+// Helper function to render color based on score
+const getScoreColor = (score: number) => {
+    if (score >= 2) return 'text-green-700';
+    if (score >= 1) return 'text-yellow-700';
+    return 'text-red-700';
+  };
+
 export {
     formatHeadersForAI,
     promptToAi,
-    getPDF
+    getPDF,
+    getScoreColor
 };
