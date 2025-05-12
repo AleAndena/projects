@@ -23,13 +23,13 @@ export function KeywordDensityDisplay(
 
     // Get text color based on density percentage
     const getTextColor = (density: number) => {
-        if (density >= 2.5) return 'text-red-700';
-        if (density >= 2.25) return 'text-yellow-700';
-        if (density >= 1.9) return 'text-yellow-500';
-        if (density >= 1.1) return 'text-green-600';
-        if (density >= 0.75) return 'text-yellow-500';
-        if (density >= 0.5) return 'text-yellow-700';
-        return 'text-red-700';
+        if (density >= 2.5) return 'text-red-400';
+        if (density >= 2.25) return 'text-yellow-400';
+        if (density >= 1.9) return 'text-yellow-300';
+        if (density >= 1.1) return 'text-green-400';
+        if (density >= 0.75) return 'text-yellow-300';
+        if (density >= 0.5) return 'text-yellow-400';
+        return 'text-red-400';
     };
     
 
@@ -41,13 +41,13 @@ export function KeywordDensityDisplay(
     const getSegmentColor = (index: number) => {
         const segmentValue = (( index + 1 ) / MAX_SEGMENTS) * MAX_DENSITY;
 
-        if (segmentValue >= 2.5) return 'bg-red-700';
-        if (segmentValue >= 2.25) return 'bg-yellow-700';
-        if (segmentValue >= 1.9) return 'bg-yellow-500';
-        if (segmentValue >= 1.1) return 'bg-green-600';
-        if (segmentValue >= 0.75) return 'bg-yellow-500';
-        if (segmentValue >= 0.5) return 'bg-yellow-700';
-        return 'bg-red-700';
+        if (segmentValue >= 2.5) return 'bg-red-500';
+        if (segmentValue >= 2.25) return 'bg-yellow-500';
+        if (segmentValue >= 1.9) return 'bg-yellow-400';
+        if (segmentValue >= 1.1) return 'bg-green-500';
+        if (segmentValue >= 0.75) return 'bg-yellow-400';
+        if (segmentValue >= 0.5) return 'bg-yellow-500';
+        return 'bg-red-500';
     };
 
     // How many segments should be filled based on the density
@@ -60,7 +60,7 @@ export function KeywordDensityDisplay(
     return (
         <div className="mb-6">
             <div className="flex justify-between mb-1">
-                <span className="font-medium text-gray-900">{keyword}</span>
+                <span className="font-medium text-white">{keyword}</span>
                 <span className={`text-sm font-medium ${textColor}`}>
                     {densityAsPercent.toFixed(2)}% ({count} occurrences)
                 </span>
@@ -71,7 +71,7 @@ export function KeywordDensityDisplay(
                 {[...Array(MAX_SEGMENTS)].map((_, i) => (
                     <div
                         key={i}
-                        className={`h-full grow ${i < filledSegments ? getSegmentColor(i) : 'bg-gray-200'}`}
+                        className={`h-full grow ${i < filledSegments ? getSegmentColor(i) : 'bg-gray-700'}`}
                     ></div>
                 ))}
             </div>

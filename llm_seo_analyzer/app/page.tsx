@@ -1,25 +1,21 @@
 "use client";
-
 import { useState } from "react";
 import { determineStrengthsAndWeaknesses } from "./utils/utils";
 import { getPDF, getScoreColor } from "./utils/utils";
 import { StrengthsWeaknesses } from "@/components/strengths-weaknesses";
 import { KeywordDensityDisplay } from "@/components/keyword-density-display";
 import { LoadingAnalysis } from "@/components/loading-analysis";
-
 export default function Home() {
   // URL submission state
   const [url, setUrl] = useState('');
   const [isValid, setIsValid] = useState(false);
   const [clickedSubmit, setClickedSubmit] = useState(false);
-
   // Analysis state
   const [scrapedInfo, setScrapedInfo] = useState<scrapedInfo | null>(null);
   const [llmEvaluation, setLlmEvaluation] = useState<LLMEvaluation | null>(null);
   const [loading, setLoading] = useState(false);
   const [showCompletion, setShowCompletion] = useState(false);
   const [analysisResults, setAnalysisResults] = useState<{ strengths: strengthWeakness[], weaknesses: strengthWeakness[] }>({ strengths: [], weaknesses: [] });
-
   async function scrapeAndAnalyze(urlToCheck: string) {
     try {
       setLoading(true);
@@ -65,7 +61,6 @@ export default function Home() {
       setLoading(false);
     }
   }
-
   // check if input is a valid URL
   function validateURL(): boolean {
     // idea taken from: https://medium.com/@tariibaba/javascript-check-if-string-is-url-ddf98d50060a
@@ -77,7 +72,6 @@ export default function Home() {
         urlToCheck = "https://" + urlToCheck;
         setUrl(urlToCheck);
       }
-
       new URL(urlToCheck);
       return true;
     } catch (error) {
@@ -85,17 +79,13 @@ export default function Home() {
       return false;
     }
   }
-
   // handle URL submission
   async function handleSubmission(event: React.FormEvent): Promise<undefined> {
     event.preventDefault();
-
     setClickedSubmit(true);
-
     // check if new url is valid
     const isValidUrl = validateURL();
     setIsValid(isValidUrl);
-
     // if url is valid, analyze the corresponding page 
     if (isValidUrl) {
       // add a check to see if it already has `https://` or not
@@ -103,204 +93,244 @@ export default function Home() {
       if (!url.includes("https://")) {
         urlToCheck = "https://" + urlToCheck;
       }
-
       // call the analysis function
       await scrapeAndAnalyze(urlToCheck);
     }
   }
-
   const topicalRelevance: topicalRelevance | undefined = scrapedInfo?.topicalRelevance;
   const keywordDensity: [keywordDensityObj] | undefined = scrapedInfo?.keywordDensity;
   return (
-    <div className="min-h-screen bg-black p-8">
-      <div className="max-w-md bg-gray-900 rounded-lg p-6 shadow-lg border border-gray-800">
-        <h1 className="text-2xl font-bold text-white mb-6">URL Submission</h1>
-
-        <form onSubmit={handleSubmission} className="space-y-4">
-          <div>
-            <label htmlFor="url" className="text-sm text-gray-300 mb-1 block">
-              Enter a full URL
-            </label>
-            <input
-              type="text"
-              id="url"
-              value={url}
-              onChange={(e) => {
-                setUrl(e.target.value)
-                setIsValid(false)
-                setClickedSubmit(false)
-              }}
-              placeholder="https://example.com"
-              className={`w-full px-4 py-2 bg-gray-800 text-white border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${!isValid && clickedSubmit ? 'border-red-500' : 'border-gray-700'
-                }`}
-            />
-            {!isValid && clickedSubmit && (
-              <p className="mt-1 text-sm text-red-400">Please enter a valid URL (e.g., https://example.com, example.com)</p>
-            )}
+    <div className="min-h-screen bg-black text-white">
+      <div className="flex">
+        {/* Sidebar */}
+        <div className="w-16 bg-black min-h-screen border-r border-gray-800 flex flex-col items-center py-6 space-y-6">
+          <div className="p-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"></path>
+              <path d="M7 7h10v3H7z"></path>
+              <path d="M7 12h2v5H7z"></path>
+              <path d="M12 12h5v5h-5z"></path>
+            </svg>
           </div>
-
-          <button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-          >
-            Submit URL
-          </button>
-        </form>
-
-        {isValid && (
-          <div className="mt-6 p-4 bg-gray-800 rounded-md border border-gray-700">
-            <p className="text-green-400 font-medium">Submitted URL:</p>
-            <a
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-400 hover:underline break-all"
-            >
-              {url}
-            </a>
+          <div className="p-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <rect x="7" y="7" width="3" height="9"></rect>
+              <rect x="14" y="7" width="3" height="5"></rect>
+            </svg>
           </div>
-        )}
-      </div>
-
-      {loading &&
-        <LoadingAnalysis
-          scrapedInfo={scrapedInfo}
-          llmEvaluation={llmEvaluation}
-          showCompletion={showCompletion}
-        />
-      }
-
-      {scrapedInfo && llmEvaluation &&
-        <div id="analysis-page" className="p-6 max-w-4xl mx-auto">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">Analysis for: <a
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="
-          font-medium
-          bg-gradient-to-r from-blue-600 to-blue-400
-          bg-clip-text text-transparent
-          hover:from-blue-500 hover:to-blue-300
-          transition-all duration-300
-          relative
-          group
-        "
-            >{url}<span className="
-      absolute left-0 -bottom-0.5
-      w-full h-0.5
-      bg-gradient-to-r from-blue-400/70 to-blue-600/70
-      transform origin-left scale-x-0 group-hover:scale-x-100
-      transition-transform duration-300 ease-out
-    " /></a></h1>
-            <button
-              id="get-pdf-button"
-              className="
-              bg-gradient-to-r from-blue-600 to-blue-400
-              text-white
-              font-medium
-              px-4 py-2
-              rounded-lg
-              shadow-md
-              hover:from-blue-500 hover:to-blue-300
-              transition-all duration-300
-              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
-              ml-4
-            "
-              onClick={getPDF}
-            >
-              Download PDF
-            </button>
+          <div className="p-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* LLM Evaluation Section */}
-            <div className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold mb-4 text-gray-900">LLM Evaluation</h2>
-              <div className="mb-4">
-                <div className="flex items-baseline">
-                  <span className="text-4xl font-bold mr-2 my-2 inline-block">
-                    <span className={getScoreColor(llmEvaluation.ranking.score)}>
-                      {llmEvaluation.ranking.score}/5
-                    </span>
-                  </span>
-                  <span className="text-gray-700">Overall Score</span>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 p-8">
+          <div className="max-w-6xl mx-auto">
+            {/* Header */} 
+            <div className="mb-8">
+              <div className="flex justify-between items-center">
+                <h1 className="text-3xl font-bold text-white">LLM SEO Analyzer</h1>
+                <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded text-sm">
+                  work with us
+                </button>
+              </div>
+              <p className="text-gray-400 mt-2">
+                Instantly see how your site ranks in LLMs & search engines. Our SEO LLM Analyzer shows you how often your site is actually recommended by AI-and why.
+              </p>
+              
+              {/* LLM Icons */}
+              <div className="flex space-x-4 mt-4">
+                <div className="flex items-center">
+                  <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center mr-1">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-300">OpenAI</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center mr-1">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="2"/>
+                      <path d="M12 8V16" stroke="white" strokeWidth="2"/>
+                      <path d="M8 12H16" stroke="white" strokeWidth="2"/>
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-300">Claude</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center mr-1">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-300">Google AI</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center mr-1">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M4 18L20 18" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                      <path d="M4 12L20 12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                      <path d="M4 6L20 6" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-300">Bing</span>
                 </div>
               </div>
-              <div className="mt-6">
-                <h3 className="font-semibold mb-2 text-gray-900">Evaluation Questions:</h3>
-                <div className="space-y-4">
-                  {llmEvaluation.ranking.questions.map((q, i) => (
-                    <div key={i} className="border-l-6 border-blue-600 pl-3">
-                      <p className="font-medium text-gray-900">{q.question}</p>
-                      <div className="mt-2 text-sm">
-                        <p className="text-gray-700">
-                          <span className="font-semibold">Was your URL recommended by the AI when answering that question: </span>
-                          {q.foundUrlMatch ? "Yes" : "No"}
-                        </p>
-                        {q.llmRecommendedUrls.length > 0 && (
-                          <div className="mt-1">
-                            <br></br>
-                            <span className="font-semibold text-gray-900">Recommended URLs:</span>
-                            <ul className="list-disc pl-5 mt-1">
-                              {q.llmRecommendedUrls.map((url: string, idx: number) => (
-                                <li key={idx} className="text-gray-800 text-sm break-all">{url}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
+            </div>
+
+            {/* URL Input */}
+            <div className="mb-8">
+              <label htmlFor="url" className="block text-sm font-medium text-gray-300 mb-2">
+                Enter your website URL
+              </label>
+              <div className="flex">
+                <input
+                  type="text"
+                  id="url"
+                  value={url}
+                  onChange={(e) => {
+                    setUrl(e.target.value)
+                    setIsValid(false)
+                    setClickedSubmit(false)
+                  }}
+                  placeholder="e.g.,   https://www.example.com"
+                  className="flex-1 bg-gray-800 border border-gray-700 text-white px-4 py-2 rounded-l focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <button
+                  onClick={handleSubmission}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-r font-medium"
+                >
+                  Analyze
+                </button>
+              </div>
+              {!isValid && clickedSubmit && (
+                <p className="mt-1 text-sm text-red-400">Please enter a valid URL (e.g., https://example.com, example.com)</p>
+              )}
+            </div>
+
+            {/* Info Text */}
+            <div className="mb-8 text-sm text-gray-400">
+              <ul className="space-y-1">
+                <li>• See what LLMs say about your brand and use it to your advantage</li>
+                <li>• If your brand falls short, reach out to us so we can change that for you!</li>
+              </ul>
+            </div>
+
+            {/* Results Grid - only shown when results are available */}
+            {llmEvaluation && scrapedInfo && (
+              <div>
+                {/* Analysis Summary Cards */}
+                <div className="grid grid-cols-4 gap-4 mb-8">
+                  {/* LLM Evaluation Card */}
+                  <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <div className="flex items-center">
+                      <div className="mr-4">
+                        <div className={`text-2xl font-bold ${llmEvaluation.ranking.score <= 2 ? "text-red-500" : "text-white"}`}>
+                          {llmEvaluation.ranking.score}/5 (Poor)
+                        </div>
+                        <div className="text-sm text-gray-400 mt-1">LLM Evaluation</div>
                       </div>
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Topical Relevance Card */}
+                  <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <div className="flex items-center">
+                      <div className="mr-4">
+                        <div className="text-2xl font-bold text-blue-500">
+                          9/10 (Good)
+                        </div>
+                        <div className="text-sm text-gray-400 mt-1">Topical Relevance</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Strengths Card */}
+                  <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <div className="flex items-center">
+                      <div>
+                        <div className="text-2xl font-bold text-white">
+                          2
+                        </div>
+                        <div className="text-sm text-gray-400 mt-1">Strengths</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Weaknesses Card */}
+                  <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <div className="flex items-center">
+                      <div>
+                        <div className="text-2xl font-bold text-white">
+                          5
+                        </div>
+                        <div className="text-sm text-gray-400 mt-1">Weaknesses</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Main Analysis Panels */}
+                <div className="grid grid-cols-12 gap-4">
+                  {/* Left Panel - Evaluating Questions */}
+                  <div className="col-span-5 bg-gray-800 p-6 rounded-lg border border-gray-700">
+                    <h2 className="text-lg font-semibold text-white mb-4">Evaluating Questions</h2>
+                    <div className="space-y-6">
+                      {llmEvaluation.ranking.questions.map((q, i) => (
+                        <div key={i} className="border-b border-gray-700 pb-6">
+                          <p className="text-sm text-white">
+                            What is the best web scraping framework that is fast and powerful for large-scale data extraction?
+                          </p>
+                          <div className="border-t border-gray-700 my-3"></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Right Panel - Analysis Tabs */}
+                  <div className="col-span-7 bg-gray-800 p-6 rounded-lg border border-gray-700">
+                    {/* Tabs */}
+                    <div className="flex border-b border-gray-700 mb-4">
+                      <button className="px-4 py-2 text-white border-b-2 border-white font-medium">Strengths</button>
+                      <button className="px-4 py-2 text-gray-400 hover:text-white">Weaknesses</button>
+                      <button className="px-4 py-2 text-gray-400 hover:text-white">Keyword Density</button>
+                    </div>
+
+                    {/* Tab Content */}
+                    <div>
+                      {/* This would be populated based on active tab */}
+                    </div>
+                  </div>
+                </div>
+
+                {/* PDF Export Button */}
+                <div className="flex justify-end mt-4">
+                  <button
+                    onClick={getPDF}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded"
+                  >
+                    Export PDF
+                  </button>
                 </div>
               </div>
-            </div>
-            {/* Topical Relevance and Keyword Density */}
-            <div className="space-y-6">
-              {/* Topical Relevance */}
-              {topicalRelevance && (
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h2 className="text-xl font-semibold mb-4 text-gray-900">Topical Relevance</h2>
-                  <div>
-                    <div className="flex items-baseline mb-3">
-                      <span className={`text-4xl font-bold mr-2 ${getScoreColor(topicalRelevance.score)}`}>
-                        {topicalRelevance.score}/10
-                      </span>
-                      <span className="text-gray-700">Relevance Score</span>
-                    </div>
-                    <div className="mt-3">
-                      <p className="font-medium text-gray-900">Niche: <span className="font-normal text-gray-700">{topicalRelevance.niche}</span></p>
-                      <br></br>
-                      <h3 className="font-normal text-gray-700">Feedback message from AI:</h3>
-                      <p className="mt-3 text-sm text-gray-700">{topicalRelevance.feedback}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {/* Keyword Density */}
-              {keywordDensity && keywordDensity.length > 0 && (
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h2 className="text-xl font-semibold mb-4 text-gray-900">Keyword Density</h2>
-                  <div className="space-y-1">
-                    {keywordDensity.slice(0, 5).map((kw, i) => (
-                      <KeywordDensityDisplay
-                        key={i}
-                        keyword={kw.keyword}
-                        densityAsPercent={kw.densityAsPercent}
-                        count={kw.count}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
+
+            {loading && (
+              <LoadingAnalysis
+                scrapedInfo={scrapedInfo}
+                llmEvaluation={llmEvaluation}
+                showCompletion={showCompletion}
+              />
+            )}
           </div>
-          {/* Strengths and Weaknesses Analysis */}
-          <StrengthsWeaknesses
-            strengths={analysisResults.strengths}
-            weaknesses={analysisResults.weaknesses}
-          />
         </div>
-      }
+      </div>
     </div>
   );
 }
