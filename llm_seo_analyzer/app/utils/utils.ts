@@ -83,6 +83,27 @@ const getScoreColor = (score: number) => {
     return 'text-red-700';
 };
 
+// Helper function to just get the work to describe the LLM evaluation description word
+function getDescriptionForLlmEvaluation(score: number) {
+    if (score <= 2) {
+        return "(Poor)";
+    } else if (score > 2 && score <= 4) {
+        return "(Good)";
+    } else {
+        return "(Amazing)";
+    }
+}
+
+// Similar helper function to one above, but for topical relevance
+function getDescriptionForTopRel(score: number) {
+    if (score <= 7) {
+        return "(Poor)";
+    } else if (score > 7 && score <= 9) {
+        return "(Good)";
+    } else {
+        return "(Amazing)";
+    }
+}
 
 function determineStrengthsAndWeaknesses(
     { scrapedInfo, llmEvaluation }:
@@ -237,5 +258,7 @@ export {
     promptToAi,
     getPDF,
     getScoreColor,
-    determineStrengthsAndWeaknesses
+    determineStrengthsAndWeaknesses,
+    getDescriptionForLlmEvaluation,
+    getDescriptionForTopRel
 };

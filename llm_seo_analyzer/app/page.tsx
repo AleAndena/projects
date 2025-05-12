@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { determineStrengthsAndWeaknesses } from "./utils/utils";
-import { getPDF, getScoreColor } from "./utils/utils";
+import { getPDF, getScoreColor, getDescriptionForLlmEvaluation, getDescriptionForTopRel } from "./utils/utils";
 import { StrengthsWeaknesses } from "@/components/strengths-weaknesses";
 import { KeywordDensityDisplay } from "@/components/keyword-density-display";
 import { LoadingAnalysis } from "@/components/loading-analysis";
@@ -129,7 +129,7 @@ export default function Home() {
         {/* Main Content */}
         <div className="flex-1 p-8">
           <div className="max-w-6xl mx-auto">
-            {/* Header */} 
+            {/* Header */}
             <div className="mb-8">
               <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold text-white">LLM SEO Analyzer</h1>
@@ -140,15 +140,15 @@ export default function Home() {
               <p className="text-gray-400 mt-2">
                 Instantly see how your site ranks in LLMs & search engines. Our SEO LLM Analyzer shows you how often your site is actually recommended by AI-and why.
               </p>
-              
+
               {/* LLM Icons */}
               <div className="flex space-x-4 mt-4">
                 <div className="flex items-center">
                   <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center mr-1">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
                   <span className="text-sm text-gray-300">OpenAI</span>
@@ -156,9 +156,9 @@ export default function Home() {
                 <div className="flex items-center">
                   <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center mr-1">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="2"/>
-                      <path d="M12 8V16" stroke="white" strokeWidth="2"/>
-                      <path d="M8 12H16" stroke="white" strokeWidth="2"/>
+                      <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="2" />
+                      <path d="M12 8V16" stroke="white" strokeWidth="2" />
+                      <path d="M8 12H16" stroke="white" strokeWidth="2" />
                     </svg>
                   </div>
                   <span className="text-sm text-gray-300">Claude</span>
@@ -166,7 +166,7 @@ export default function Home() {
                 <div className="flex items-center">
                   <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center mr-1">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
                   <span className="text-sm text-gray-300">Google AI</span>
@@ -174,9 +174,9 @@ export default function Home() {
                 <div className="flex items-center">
                   <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center mr-1">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M4 18L20 18" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                      <path d="M4 12L20 12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                      <path d="M4 6L20 6" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                      <path d="M4 18L20 18" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M4 12L20 12" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M4 6L20 6" stroke="white" strokeWidth="2" strokeLinecap="round" />
                     </svg>
                   </div>
                   <span className="text-sm text-gray-300">Bing</span>
@@ -232,7 +232,7 @@ export default function Home() {
                     <div className="flex items-center">
                       <div className="mr-4">
                         <div className={`text-2xl font-bold ${llmEvaluation.ranking.score <= 2 ? "text-red-500" : "text-white"}`}>
-                          {llmEvaluation.ranking.score}/5 (Poor)
+                          {llmEvaluation.ranking.score}/5 {getDescriptionForLlmEvaluation(llmEvaluation.ranking.score)}
                         </div>
                         <div className="text-sm text-gray-400 mt-1">LLM Evaluation</div>
                       </div>
@@ -244,7 +244,7 @@ export default function Home() {
                     <div className="flex items-center">
                       <div className="mr-4">
                         <div className="text-2xl font-bold text-blue-500">
-                          9/10 (Good)
+                          {topicalRelevance!.score}/10 {getDescriptionForTopRel(topicalRelevance!.score)}
                         </div>
                         <div className="text-sm text-gray-400 mt-1">Topical Relevance</div>
                       </div>
@@ -256,7 +256,7 @@ export default function Home() {
                     <div className="flex items-center">
                       <div>
                         <div className="text-2xl font-bold text-white">
-                          2
+                          {analysisResults.strengths.length}
                         </div>
                         <div className="text-sm text-gray-400 mt-1">Strengths</div>
                       </div>
@@ -268,7 +268,7 @@ export default function Home() {
                     <div className="flex items-center">
                       <div>
                         <div className="text-2xl font-bold text-white">
-                          5
+                          {analysisResults.weaknesses.length}
                         </div>
                         <div className="text-sm text-gray-400 mt-1">Weaknesses</div>
                       </div>
@@ -276,38 +276,53 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Main Analysis Panels */}
-                <div className="grid grid-cols-12 gap-4">
-                  {/* Left Panel - Evaluating Questions */}
-                  <div className="col-span-5 bg-gray-800 p-6 rounded-lg border border-gray-700">
-                    <h2 className="text-lg font-semibold text-white mb-4">Evaluating Questions</h2>
-                    <div className="space-y-6">
+                {/* LLM Evaluation Section */}
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <h2 className="text-xl font-semibold mb-4 text-gray-900">LLM Evaluation</h2>
+                  <div className="mb-4">
+                    <div className="flex items-baseline">
+                      <span className="text-4xl font-bold mr-2 my-2 inline-block">
+                        <span className={getScoreColor(llmEvaluation.ranking.score)}>
+                          {llmEvaluation.ranking.score}/5
+                        </span>
+                      </span>
+                      <span className="text-gray-700">Overall Score</span>
+                    </div>
+                  </div>
+                  <div className="mt-6">
+                    <h3 className="font-semibold mb-2 text-gray-900">Evaluation Questions:</h3>
+                    <div className="space-y-4">
                       {llmEvaluation.ranking.questions.map((q, i) => (
-                        <div key={i} className="border-b border-gray-700 pb-6">
-                          <p className="text-sm text-white">
-                            What is the best web scraping framework that is fast and powerful for large-scale data extraction?
-                          </p>
-                          <div className="border-t border-gray-700 my-3"></div>
+                        <div key={i} className="border-l-6 border-blue-600 pl-3">
+                          <p className="font-medium text-gray-900">{q.question}</p>
+                          <div className="mt-2 text-sm">
+                            <p className="text-gray-700">
+                              <span className="font-semibold">Was your URL recommended by the AI when answering that question: </span>
+                              {q.foundUrlMatch ? "Yes" : "No"}
+                            </p>
+                            {q.llmRecommendedUrls.length > 0 && (
+                              <div className="mt-1">
+                                <br></br>
+                                <span className="font-semibold text-gray-900">Recommended URLs:</span>
+                                <ul className="list-disc pl-5 mt-1">
+                                  {q.llmRecommendedUrls.map((url: string, idx: number) => (
+                                    <li key={idx} className="text-gray-800 text-sm break-all">{url}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
                   </div>
-
-                  {/* Right Panel - Analysis Tabs */}
-                  <div className="col-span-7 bg-gray-800 p-6 rounded-lg border border-gray-700">
-                    {/* Tabs */}
-                    <div className="flex border-b border-gray-700 mb-4">
-                      <button className="px-4 py-2 text-white border-b-2 border-white font-medium">Strengths</button>
-                      <button className="px-4 py-2 text-gray-400 hover:text-white">Weaknesses</button>
-                      <button className="px-4 py-2 text-gray-400 hover:text-white">Keyword Density</button>
-                    </div>
-
-                    {/* Tab Content */}
-                    <div>
-                      {/* This would be populated based on active tab */}
-                    </div>
-                  </div>
                 </div>
+
+                {/* Strengths and Weaknesses Analysis */}
+                  <StrengthsWeaknesses
+                    strengths={analysisResults.strengths}
+                    weaknesses={analysisResults.weaknesses}
+                  />
 
                 {/* PDF Export Button */}
                 <div className="flex justify-end mt-4">
