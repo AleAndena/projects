@@ -118,10 +118,10 @@ function determineStrengthsAndWeaknesses(
     if (llmEvalScore >= 1) {
         const dynamicMessage =
             llmEvalScore === 1 ? "Your URL showed up once! This is actually a very good start and is a solid foundation to build upon." :
-                llmEvalScore === 2 ? "Your URL showed up twice! A very strong baseline that very likely outperforms other competitors." :
-                    llmEvalScore === 3 ? "Your URL showed up three times! Your site has great visibility that can be maximized even further." :
-                        llmEvalScore === 4 ? "Your URL showed up four times! Your site has incredible recognition which can be even further improved." :
-                            "Your URL showed up FIVE times, a perfect score! Your site has outstanding visibility which can be improved EVEN FURTHER."
+            llmEvalScore === 2 ? "Your URL showed up twice! A very strong baseline that very likely outperforms other competitors." :
+            llmEvalScore === 3 ? "Your URL showed up three times! Your site has great visibility that can be maximized even further." :
+            llmEvalScore === 4 ? "Your URL showed up four times! Your site has incredible recognition which can be even further improved." :
+            "Your URL showed up FIVE times, a perfect score! Your site has outstanding visibility which can be improved EVEN FURTHER."
         arrOfStrengths.push({
             name: "LLM Evaluation: How many times did your URL show up in the AI's responses to the questions.",
             message: dynamicMessage

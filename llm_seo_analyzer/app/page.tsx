@@ -99,6 +99,9 @@ export default function Home() {
   }
   const topicalRelevance: topicalRelevance | undefined = scrapedInfo?.topicalRelevance;
   const keywordDensity: [keywordDensityObj] | undefined = scrapedInfo?.keywordDensity;
+  const LLMpercentage = llmEvaluation ? (llmEvaluation.ranking.score / 5) * 100 : null;
+  const topRelPercentage = topicalRelevance ? (topicalRelevance.score / 10) * 100 : null;
+
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="flex">
@@ -230,11 +233,20 @@ export default function Home() {
                   {/* LLM Evaluation Card */}
                   <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
                     <div className="flex items-center">
-                      <div className="mr-4">
-                        <div className={`text-2xl font-bold ${llmEvaluation.ranking.score <= 2 ? "text-red-500" : "text-white"}`}>
-                          {llmEvaluation.ranking.score}/5 {getDescriptionForLlmEvaluation(llmEvaluation.ranking.score)}
+                      <div className="flex items-center">
+                        {/* https://daisyui.com/components/radial-progress/ */}
+                        {/* Donut graph to show the score */}
+                        <div className={`radial-progress ${llmEvaluation.ranking.score <= 2 ? "text-secondary" : "text-primary"} mr-4`}
+                          style={{ "--value": LLMpercentage!, "--size": "4vw", "--thickness": "0.7vw" } as React.CSSProperties}
+                          aria-valuenow={LLMpercentage!}
+                          role="progressbar">
                         </div>
-                        <div className="text-sm text-gray-400 mt-1">LLM Evaluation</div>
+                        <div>
+                          <div className="text-2xl font-bold">
+                            {llmEvaluation.ranking.score}/5 {getDescriptionForLlmEvaluation(llmEvaluation.ranking.score)}
+                          </div>
+                          <div className="text-sm text-gray-400 mt-1">LLM Evaluation</div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -242,11 +254,20 @@ export default function Home() {
                   {/* Topical Relevance Card */}
                   <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
                     <div className="flex items-center">
-                      <div className="mr-4">
-                        <div className="text-2xl font-bold text-blue-500">
-                          {topicalRelevance!.score}/10 {getDescriptionForTopRel(topicalRelevance!.score)}
+                      <div className="flex items-center">
+                        {/* https://daisyui.com/components/radial-progress/ */}
+                        {/* Donut graph to show the score */}
+                        <div className={`radial-progress ${topicalRelevance!.score <= 6 ? "text-secondary" : "text-primary"} mr-4`}
+                          style={{ "--value": topRelPercentage!, "--size": "4vw", "--thickness": "0.7vw" } as React.CSSProperties}
+                          aria-valuenow={topRelPercentage!}
+                          role="progressbar">
                         </div>
-                        <div className="text-sm text-gray-400 mt-1">Topical Relevance</div>
+                        <div>
+                          <div className="text-2xl font-bold">
+                            {topicalRelevance!.score}/10 {getDescriptionForTopRel(topicalRelevance!.score)}
+                          </div>
+                          <div className="text-sm text-gray-400 mt-1">Topical Relevance</div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -319,10 +340,10 @@ export default function Home() {
                 </div>
 
                 {/* Strengths and Weaknesses Analysis */}
-                  <StrengthsWeaknesses
-                    strengths={analysisResults.strengths}
-                    weaknesses={analysisResults.weaknesses}
-                  />
+                <StrengthsWeaknesses
+                  strengths={analysisResults.strengths}
+                  weaknesses={analysisResults.weaknesses}
+                />
 
                 {/* PDF Export Button */}
                 <div className="flex justify-end mt-4">
