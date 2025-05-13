@@ -14,6 +14,8 @@
     "geist": "^1.4.1",
     "html2canvas-pro": "^1.5.10",
     "jspdf": "^3.0.1",
+    "lottie-react": "^2.4.1",
+    "lottie-web": "^5.12.2",
     "next": "15.3.0",
     "openai": "^4.95.0",
     "postcss": "^8.5.3",
