@@ -5,7 +5,7 @@ export function LoadingAnalysis(
         { scrapedInfo: scrapedInfo | null, llmEvaluation: LLMEvaluation | null, showCompletion: boolean }
 ) {
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="flex items-center justify-center min-h-screen bg-black-50">
             <div className="text-center max-w-md px-4">
 
                 {/* Lottie loader */}

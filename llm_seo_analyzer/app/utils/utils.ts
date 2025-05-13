@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
+import { Dispatch, SetStateAction } from 'react';
 
 function formatHeadersForAI(headers: { type: string; text: string; }[]) {
     return headers
@@ -260,5 +261,5 @@ export {
     getScoreColor,
     determineStrengthsAndWeaknesses,
     getDescriptionForLlmEvaluation,
-    getDescriptionForTopRel
+    getDescriptionForTopRel,
 };

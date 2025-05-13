@@ -11,7 +11,7 @@ export function StrengthsWeaknesses ({
   const [activeTab, setActiveTab] = useState('strengths');
   
   return (
-    <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 mt-6">
+    <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
       <h2 className="text-xl font-semibold mb-4 text-white">Site Analysis Summary</h2>
       
       {/* Tab Navigation */}
