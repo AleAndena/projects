@@ -18,7 +18,7 @@ export default function Home() {
   const [showCompletion, setShowCompletion] = useState(false);
   const [analysisResults, setAnalysisResults] = useState<{ strengths: strengthWeakness[], weaknesses: strengthWeakness[] }>({ strengths: [], weaknesses: [] });
   const [llmEvalIndex, setLlmEvalIndex] = useState(0);
-  
+
   async function scrapeAndAnalyze(urlToCheck: string) {
     try {
       setLoading(true);
@@ -84,16 +84,16 @@ export default function Home() {
   }
 
   // handle the index state for the llm evluation
-  function incrementLlmEvalIndex(){
-      if(llmEvalIndex < 4){
-          setLlmEvalIndex(llmEvalIndex + 1);
-      }
+  function incrementLlmEvalIndex() {
+    if (llmEvalIndex < 4) {
+      setLlmEvalIndex(llmEvalIndex + 1);
+    }
   }
   // handle the index state for the llm evluation
-  function decrementLlmEvalIndex(){
-      if(llmEvalIndex > 0) {
-          setLlmEvalIndex(llmEvalIndex - 1);
-      }
+  function decrementLlmEvalIndex() {
+    if (llmEvalIndex > 0) {
+      setLlmEvalIndex(llmEvalIndex - 1);
+    }
   }
 
   // handle URL submission
@@ -119,26 +119,26 @@ export default function Home() {
   const LLMpercentage = llmEvaluation ? (llmEvaluation.ranking.score / 5) * 100 : null;
   const topRelPercentage = topicalRelevance ? (topicalRelevance.score / 10) * 100 : null;
   const arrOfLlmEvauations = llmEvaluation ? llmEvaluation.ranking.questions.map((q, i) => (
-                        <div key={i} className="border-l-6 border-blue-600 pl-3">
-                          <p className="font-medium text-gray-900">{q.question}</p>
-                          <div className="mt-2 text-sm">
-                            <p className="text-gray-700">
-                              <span className="font-semibold">Was your URL recommended by the AI when answering that question: </span>
-                              {q.foundUrlMatch ? <h3>Yes</h3> : <h3>No</h3>}
-                            </p>
-                            {q.llmRecommendedUrls.length > 0 && (
-                              <div className="mt-1">
-                                <span className="font-semibold text-gray-900">Recommended URLs:</span>
-                                <ul className="list-disc pl-5 mt-1">
-                                  {q.llmRecommendedUrls.map((url: string, idx: number) => (
-                                    <li key={idx} className="text-gray-800 text-sm break-all">{url}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )) : null;
+    <div key={i} className="border-l-6 border-blue-600 pl-3">
+      <p className="font-medium text-gray-900">{q.question}</p>
+      <div className="mt-2 text-sm">
+        <p className="text-gray-700">
+          <span className="font-semibold">Was your URL recommended by the AI when answering that question: </span>
+          {q.foundUrlMatch ? <h3>Yes</h3> : <h3>No</h3>}
+        </p>
+        {q.llmRecommendedUrls.length > 0 && (
+          <div className="mt-1">
+            <span className="font-semibold text-gray-900">Recommended URLs:</span>
+            <ul className="list-disc pl-5 mt-1">
+              {q.llmRecommendedUrls.map((url: string, idx: number) => (
+                <li key={idx} className="text-gray-800 text-sm break-all">{url}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  )) : null;
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -335,36 +335,77 @@ export default function Home() {
                   </div>
                 </div>
 
-              <div className="mt-8 grid gap-6 md:grid-cols-2">
-              {/* LLM Evaluation Section */}
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h2 className="text-xl font-semibold mb-4 text-gray-900">LLM Evaluation</h2>
-                  <div className="mb-4">
-                    <div className="flex items-baseline">
-                      <span className="text-4xl font-bold mr-2 my-2 inline-block">
-                        <span className={getScoreColor(llmEvaluation.ranking.score)}>
-                          {llmEvaluation.ranking.score}/5
+                <div className="mt-8 grid gap-6 md:grid-cols-2">
+                  {/* LLM Evaluation Section */}
+                  <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                    <h2 className="text-xl font-semibold mb-6 text-white">LLM Evaluation</h2>
+                    <div className="mb-8">
+                      <div className="flex items-baseline space-x-4">
+                        <span className="text-4xl font-bold my-2 inline-block">
+                          <span className={getScoreColor(llmEvaluation.ranking.score)}>
+                            {llmEvaluation.ranking.score}/5
+                          </span>
                         </span>
-                      </span>
-                      <span className="text-gray-700">Overall Score</span>
+                        <span className="text-gray-200 text-lg">Overall Score</span>
+                      </div>
+                    </div>
+                    <div className="mt-8">
+                      <div className="space-y-6">
+                        {llmEvaluation && arrOfLlmEvauations && arrOfLlmEvauations[llmEvalIndex] ? (
+                          <div className="border-l-6 border-blue-600 pl-4">
+                            <p className="font-medium text-white text-lg mb-4">
+                              {llmEvaluation.ranking.questions[llmEvalIndex].question}
+                            </p>
+                            <div className="space-y-3 text-sm">
+                              <p className="text-gray-300">
+                                <span className="font-semibold">Was your URL recommended by the AI when answering that question: </span>
+                                {llmEvaluation.ranking.questions[llmEvalIndex].foundUrlMatch ? (
+                                  <span className="inline-block text-green-400">Yes</span>
+                                ) : (
+                                  <span className="inline-block text-red-400">No</span>
+                                )}
+                              </p>
+                              {llmEvaluation.ranking.questions[llmEvalIndex].llmRecommendedUrls.length > 0 && (
+                                <div className="mt-2">
+                                  <span className="font-semibold text-white">Recommended URLs:</span>
+                                  <ul className="list-disc pl-6 mt-2 space-y-1">
+                                    {llmEvaluation.ranking.questions[llmEvalIndex].llmRecommendedUrls.map((url: string, idx: number) => (
+                                      <li key={idx} className="text-gray-300 text-sm break-all">{url}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-gray-400 text-lg">No evaluation data available</p>
+                        )}
+                      </div>
+                      <div className="mt-6 flex justify-between">
+                        <button
+                          onClick={decrementLlmEvalIndex}
+                          className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={llmEvalIndex === 0}
+                        >
+                          Prev
+                        </button>
+                        <button
+                          onClick={incrementLlmEvalIndex}
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={llmEvalIndex >= 4}
+                        >
+                          Next
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <div className="mt-6">
-                    {/* <h3 className="font-semibold mb-2 text-gray-900">Evaluation Questions:</h3> */}
-                    <div className="space-y-4">
-                      {arrOfLlmEvauations![llmEvalIndex]}
-                    </div>
-                    <button onClick={decrementLlmEvalIndex}>Prev</button>
-                    <button onClick={incrementLlmEvalIndex}>Next</button>
-                  </div>
-                </div>
 
-                {/* Strengths and Weaknesses Analysis */}
-                <StrengthsWeaknesses
-                  strengths={analysisResults.strengths}
-                  weaknesses={analysisResults.weaknesses}
-                />
-              </div>
+                  {/* Strengths and Weaknesses Analysis */}
+                  <StrengthsWeaknesses
+                    strengths={analysisResults.strengths}
+                    weaknesses={analysisResults.weaknesses}
+                  />
+                </div>
 
                 {/* PDF Export Button */}
                 <div className="flex justify-end mt-4">
