@@ -88,7 +88,7 @@ const getScoreColor = (score: number) => {
 function getDescriptionForLlmEvaluation(score: number) {
     if (score < 2) {
         return "(Poor)";
-    } else if (score => 2 && score <= 4) {
+    } else if (score >= 2 && score <= 4) {
         return "(Good)";
     } else {
         return "(Great)";
