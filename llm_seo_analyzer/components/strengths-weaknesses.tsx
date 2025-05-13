@@ -55,7 +55,7 @@ export function StrengthsWeaknesses({
   ));
 
   // Content for current page (2 per page)
-  let content: JSX.Element | JSX.Element[];
+  let content;
   if (activeTab === "strengths") {
     if (strengths.length === 0) {
       content = <p className="text-gray-400 italic">No strengths detected.</p>;
