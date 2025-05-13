@@ -86,12 +86,12 @@ const getScoreColor = (score: number) => {
 
 // Helper function to just get the work to describe the LLM evaluation description word
 function getDescriptionForLlmEvaluation(score: number) {
-    if (score <= 2) {
+    if (score < 2) {
         return "(Poor)";
-    } else if (score > 2 && score <= 4) {
+    } else if (score => 2 && score <= 4) {
         return "(Good)";
     } else {
-        return "(Amazing)";
+        return "(Great)";
     }
 }
 
@@ -102,7 +102,7 @@ function getDescriptionForTopRel(score: number) {
     } else if (score > 7 && score <= 9) {
         return "(Good)";
     } else {
-        return "(Amazing)";
+        return "(Great)";
     }
 }
 

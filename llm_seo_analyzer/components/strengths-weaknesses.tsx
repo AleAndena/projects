@@ -1,74 +1,140 @@
 "use client";
-import { useState } from 'react';
+import { useState } from "react";
 
-export function StrengthsWeaknesses ({ 
-  strengths, 
-  weaknesses 
+export function StrengthsWeaknesses({
+  strengths,
+  weaknesses,
 }: {
-  strengths: strengthWeakness[],
-  weaknesses: strengthWeakness[]
+  strengths: strengthWeakness[];
+  weaknesses: strengthWeakness[];
 }) {
-  const [activeTab, setActiveTab] = useState('strengths');
-  
+  const [activeTab, setActiveTab] = useState<"strengths" | "weaknesses">(
+    "strengths"
+  );
+  const [strengthsPage, setStrengthsPage] = useState(0);
+  const [weaknessesPage, setWeaknessesPage] = useState(0);
+
+  // compute page counts
+  const strengthsPageCount = Math.ceil(strengths.length / 2);
+  const weaknessesPageCount = Math.ceil(weaknesses.length / 2);
+
+  // Handlers
+  function handlePrev() {
+    if (activeTab === "strengths") {
+      setStrengthsPage((p) => Math.max(p - 1, 0));
+    } else {
+      setWeaknessesPage((p) => Math.max(p - 1, 0));
+    }
+  }
+  function handleNext() {
+    if (activeTab === "strengths") {
+      setStrengthsPage((p) => Math.min(p + 1, strengthsPageCount - 1));
+    } else {
+      setWeaknessesPage((p) => Math.min(p + 1, weaknessesPageCount - 1));
+    }
+  }
+
+  // Prepare the lists as arrays of JSX
+  const strengthItems = strengths.map((item, idx) => (
+    <div
+      key={idx}
+      className="border-l-4 border-green-500 pl-4 py-2 bg-gray-700 rounded-r-lg"
+    >
+      <h3 className="font-medium text-white">{item.name}</h3>
+      <p className="text-sm text-gray-300 mt-1">{item.message}</p>
+    </div>
+  ));
+  const weaknessItems = weaknesses.map((item, idx) => (
+    <div
+      key={idx}
+      className="border-l-4 border-red-500 pl-4 py-2 bg-gray-700 rounded-r-lg"
+    >
+      <h3 className="font-medium text-white">{item.name}</h3>
+      <p className="text-sm text-gray-300 mt-1">{item.message}</p>
+    </div>
+  ));
+
+  // Content for current page (2 per page)
+  let content: JSX.Element | JSX.Element[];
+  if (activeTab === "strengths") {
+    if (strengths.length === 0) {
+      content = <p className="text-gray-400 italic">No strengths detected.</p>;
+    } else {
+      const start = strengthsPage * 2;
+      content = strengthItems.slice(start, start + 2);
+    }
+  } else {
+    if (weaknesses.length === 0) {
+      content = <p className="text-gray-400 italic">No weaknesses detected.</p>;
+    } else {
+      const start = weaknessesPage * 2;
+      content = weaknessItems.slice(start, start + 2);
+    }
+  }
+
+  // disabled state
+  const atStart =
+    (activeTab === "strengths" ? strengthsPage : weaknessesPage) === 0;
+  const atEnd =
+    activeTab === "strengths"
+      ? strengthsPage === strengthsPageCount - 1
+      : weaknessesPage === weaknessesPageCount - 1;
+
   return (
     <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-      <h2 className="text-xl font-semibold mb-4 text-white">Site Analysis Summary</h2>
-      
+      <h2 className="text-xl font-semibold mb-4 text-white">
+        Site Analysis Summary
+      </h2>
+
       {/* Tab Navigation */}
       <div className="flex border-b border-gray-700 mb-4">
-        <button 
-          onClick={() => setActiveTab('strengths')} 
+        <button
+          onClick={() => setActiveTab("strengths")}
           className={`py-2 px-4 font-medium text-sm mr-2 transition-colors duration-200 ${
-            activeTab === 'strengths' 
-              ? 'text-white border-b-2 border-white' 
-              : 'text-gray-400 hover:text-white'
+            activeTab === "strengths"
+              ? "text-white border-b-2 border-white"
+              : "text-gray-400 hover:text-white"
           }`}
         >
           Strengths ({strengths.length})
         </button>
-        <button 
-          onClick={() => setActiveTab('weaknesses')} 
+        <button
+          onClick={() => setActiveTab("weaknesses")}
           className={`py-2 px-4 font-medium text-sm transition-colors duration-200 ${
-            activeTab === 'weaknesses' 
-              ? 'text-white border-b-2 border-white' 
-              : 'text-gray-400 hover:text-white'
+            activeTab === "weaknesses"
+              ? "text-white border-b-2 border-white"
+              : "text-gray-400 hover:text-white"
           }`}
         >
           Weaknesses ({weaknesses.length})
         </button>
-        <button 
-          className="py-2 px-4 font-medium text-sm text-gray-400 hover:text-white transition-colors duration-200"
-        >
+        <button className="py-2 px-4 font-medium text-sm text-gray-400 hover:text-white transition-colors duration-200">
           Keyword Density
         </button>
       </div>
-      
-      {/* Content Section */}
+
+      {/* Content */}
       <div className="space-y-4">
-        {activeTab === 'strengths' ? (
-          strengths.length > 0 ? (
-            strengths.map((item, index: number) => (
-              <div key={index} className="border-l-4 border-green-500 pl-4 py-2 bg-gray-700 rounded-r-lg">
-                <h3 className="font-medium text-white">{item.name}</h3>
-                <p className="text-sm text-gray-300 mt-1">{item.message}</p>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-400 italic">No strengths detected.</p>
-          )
-        ) : (
-          weaknesses.length > 0 ? (
-            weaknesses.map((item, index: number) => (
-              <div key={index} className="border-l-4 border-red-500 pl-4 py-2 bg-gray-700 rounded-r-lg">
-                <h3 className="font-medium text-white">{item.name}</h3>
-                <p className="text-sm text-gray-300 mt-1">{item.message}</p>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-400 italic">No weaknesses detected.</p>
-          )
-        )}
+        {Array.isArray(content) ? content : <>{content}</>}
+      </div>
+
+      {/* Pagination Buttons */}
+      <div className="mt-6 flex justify-between">
+        <button
+          onClick={handlePrev}
+          disabled={atStart}
+          className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Prev
+        </button>
+        <button
+          onClick={handleNext}
+          disabled={atEnd}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Next
+        </button>
       </div>
     </div>
   );
-};
+}
