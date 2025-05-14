@@ -1,3 +1,4 @@
+"use client";
 import LottieLoader from "./lottie-loader";
 
 export function LoadingAnalysis({scrapedInfo, llmEvaluation, showCompletion}: {

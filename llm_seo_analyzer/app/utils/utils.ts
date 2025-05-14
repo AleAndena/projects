@@ -34,6 +34,10 @@ async function promptToAi(systemContent: string, userContent: string, maxTokens:
 // Source of logic for making the PDF:
 // https://blog.risingstack.com/pdf-from-html-node-js-puppeteer/
 function getPDF() {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+        console.warn('getPDF cannot run on the server');
+        return;
+    }
     try {
         const domElement = document.getElementById('analysis-page');
         const pdfButton = document.getElementById('get-pdf-button');
