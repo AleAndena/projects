@@ -344,7 +344,7 @@ export default function Home() {
 
                 <div className="mt-8 grid gap-6 md:grid-cols-2">
                   {/* LLM Evaluation Section */}
-                  <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 flex flex-col min-h-[400px]">
+                  <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 flex flex-col h-[75vh] min-h-[75vh]">
                     <h2 className="text-xl font-semibold mb-6 text-white">LLM Evaluation</h2>
                     <div className="mb-8">
                       <div className="flex items-baseline space-x-4">

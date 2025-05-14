@@ -114,7 +114,7 @@ export function StrengthsWeaknessesDensity({
       : keywordsPage === keywordsPageCount - 1;
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 flex flex-col min-h-[400px]">
+    <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 flex flex-col h-[75vh] min-h-[75vh]">
       <h2 className="text-xl font-semibold mb-4 text-white">
         Site Analysis Summary
       </h2>
@@ -154,7 +154,7 @@ export function StrengthsWeaknessesDensity({
       </div>
 
       {/* Content */}
-      <div className="flex-grow space-y-4">
+      <div className="flex-grow space-y-4 overflow-y-auto">
         {Array.isArray(content) ? content : <>{content}</>}
       </div>
 
