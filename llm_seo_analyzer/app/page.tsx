@@ -1,10 +1,14 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { determineStrengthsAndWeaknesses } from "./utils/utils";
 import { getPDF, getScoreColor, getDescriptionForLlmEvaluation, getDescriptionForTopRel } from "./utils/utils";
 import { StrengthsWeaknesses } from "@/components/strengths-weaknesses";
 // import { KeywordDensityDisplay } from "@/components/keyword-density-display";
 import { LoadingAnalysis } from "@/components/loading-analysis";
+
+// Disable static generation
+export const dynamic = 'force-dynamic'
+
 export default function Home() {
   // URL submission state
   const [url, setUrl] = useState('');
@@ -18,13 +22,6 @@ export default function Home() {
   const [showCompletion, setShowCompletion] = useState(false);
   const [analysisResults, setAnalysisResults] = useState<{ strengths: strengthWeakness[], weaknesses: strengthWeakness[] }>({ strengths: [], weaknesses: [] });
   const [llmEvalIndex, setLlmEvalIndex] = useState(0);
-
-  // Add client-side check
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   async function scrapeAndAnalyze(urlToCheck: string) {
     try {
@@ -281,14 +278,11 @@ export default function Home() {
                       <div className="flex items-center">
                         {/* https://daisyui.com/components/radial-progress/ */}
                         {/* Donut graph to show the score */}
-                        {isClient && (
-                          <div
-                            className={`radial-progress ${llmEvaluation.ranking.score <= 2 ? "text-secondary" : "text-primary"} mr-4`}
-                            style={{ "--value": LLMpercentage!, "--size": "4vw", "--thickness": "0.7vw" } as React.CSSProperties}
-                            aria-valuenow={LLMpercentage!}
-                            role="progressbar"
-                          />
-                        )}
+                        <div className={`radial-progress ${llmEvaluation.ranking.score <= 2 ? "text-secondary" : "text-primary"} mr-4`}
+                          style={{ "--value": LLMpercentage!, "--size": "4vw", "--thickness": "0.7vw" } as React.CSSProperties}
+                          aria-valuenow={LLMpercentage!}
+                          role="progressbar">
+                        </div>
                         <div>
                           <div className="text-2xl font-bold">
                             {llmEvaluation.ranking.score}/5 {getDescriptionForLlmEvaluation(llmEvaluation.ranking.score)}
@@ -305,14 +299,11 @@ export default function Home() {
                       <div className="flex items-center">
                         {/* https://daisyui.com/components/radial-progress/ */}
                         {/* Donut graph to show the score */}
-                        {isClient && (
-                          <div
-                            className={`radial-progress ${topicalRelevance!.score <= 6 ? "text-secondary" : "text-primary"} mr-4`}
-                            style={{ "--value": topRelPercentage!, "--size": "4vw", "--thickness": "0.7vw" } as React.CSSProperties}
-                            aria-valuenow={topRelPercentage!}
-                            role="progressbar"
-                          />
-                        )}
+                        <div className={`radial-progress ${topicalRelevance!.score <= 6 ? "text-secondary" : "text-primary"} mr-4`}
+                          style={{ "--value": topRelPercentage!, "--size": "4vw", "--thickness": "0.7vw" } as React.CSSProperties}
+                          aria-valuenow={topRelPercentage!}
+                          role="progressbar">
+                        </div>
                         <div>
                           <div className="text-2xl font-bold">
                             {topicalRelevance!.score}/10 {getDescriptionForTopRel(topicalRelevance!.score)}
