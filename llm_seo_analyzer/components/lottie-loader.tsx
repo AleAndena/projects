@@ -1,5 +1,4 @@
 "use client";
-// import Lottie from "lottie-react";
 import dynamic from 'next/dynamic';
 import loaderAnim from "@/public/loading-animation.json";
 

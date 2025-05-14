@@ -1,36 +1,46 @@
 "use client";
 import { useState } from "react";
+import { KeywordDensityDisplay } from "./keyword-density-display";
 
-export function StrengthsWeaknesses({
+export function StrengthsWeaknessesDensity({
   strengths,
   weaknesses,
+  keywordDensity
 }: {
   strengths: strengthWeakness[];
   weaknesses: strengthWeakness[];
+  keywordDensity: keywordDensityObj[]
 }) {
-  const [activeTab, setActiveTab] = useState<"strengths" | "weaknesses">(
+  const [activeTab, setActiveTab] = useState<"strengths" | "weaknesses" | "keywords">(
     "strengths"
   );
   const [strengthsPage, setStrengthsPage] = useState(0);
   const [weaknessesPage, setWeaknessesPage] = useState(0);
+  const [keywordsPage, setKeywordsPage] = useState(0);
 
-  // compute page counts
+  // Compute page counts (2 items per page)
   const strengthsPageCount = Math.ceil(strengths.length / 2);
   const weaknessesPageCount = Math.ceil(weaknesses.length / 2);
+  const keywordsPageCount = Math.ceil(keywordDensity.length / 2);
 
-  // Handlers
+  // Handlers for pagination
   function handlePrev() {
     if (activeTab === "strengths") {
       setStrengthsPage((p) => Math.max(p - 1, 0));
-    } else {
+    } else if (activeTab === "weaknesses") {
       setWeaknessesPage((p) => Math.max(p - 1, 0));
+    } else {
+      setKeywordsPage((p) => Math.max(p - 1, 0));
     }
   }
+
   function handleNext() {
     if (activeTab === "strengths") {
       setStrengthsPage((p) => Math.min(p + 1, strengthsPageCount - 1));
-    } else {
+    } else if (activeTab === "weaknesses") {
       setWeaknessesPage((p) => Math.min(p + 1, weaknessesPageCount - 1));
+    } else {
+      setKeywordsPage((p) => Math.min(p + 1, keywordsPageCount - 1));
     }
   }
 
@@ -44,6 +54,7 @@ export function StrengthsWeaknesses({
       <p className="text-sm text-gray-300 mt-1">{item.message}</p>
     </div>
   ));
+
   const weaknessItems = weaknesses.map((item, idx) => (
     <div
       key={idx}
@@ -54,7 +65,16 @@ export function StrengthsWeaknesses({
     </div>
   ));
 
-  // Content for current page (2 per page)
+  const keywordItems = keywordDensity.map((kw, i) => (
+    <KeywordDensityDisplay
+      key={i}
+      keyword={kw.keyword}
+      densityAsPercent={kw.densityAsPercent}
+      count={kw.count}
+    />
+  ));
+
+  // Content for current page (2 items per page)
   let content;
   if (activeTab === "strengths") {
     if (strengths.length === 0) {
@@ -63,22 +83,35 @@ export function StrengthsWeaknesses({
       const start = strengthsPage * 2;
       content = strengthItems.slice(start, start + 2);
     }
-  } else {
+  } else if (activeTab === "weaknesses") {
     if (weaknesses.length === 0) {
       content = <p className="text-gray-400 italic">No weaknesses detected.</p>;
     } else {
       const start = weaknessesPage * 2;
       content = weaknessItems.slice(start, start + 2);
     }
+  } else {
+    if (keywordDensity.length === 0) {
+      content = <p className="text-gray-400 italic">No keywords detected.</p>;
+    } else {
+      const start = keywordsPage * 2;
+      content = keywordItems.slice(start, start + 2);
+    }
   }
 
-  // disabled state
+  // Disabled state for pagination buttons
   const atStart =
-    (activeTab === "strengths" ? strengthsPage : weaknessesPage) === 0;
+    activeTab === "strengths"
+      ? strengthsPage === 0
+      : activeTab === "weaknesses"
+      ? weaknessesPage === 0
+      : keywordsPage === 0;
   const atEnd =
     activeTab === "strengths"
       ? strengthsPage === strengthsPageCount - 1
-      : weaknessesPage === weaknessesPageCount - 1;
+      : activeTab === "weaknesses"
+      ? weaknessesPage === weaknessesPageCount - 1
+      : keywordsPage === keywordsPageCount - 1;
 
   return (
     <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
@@ -108,8 +141,15 @@ export function StrengthsWeaknesses({
         >
           Weaknesses ({weaknesses.length})
         </button>
-        <button className="py-2 px-4 font-medium text-sm text-gray-400 hover:text-white transition-colors duration-200">
-          Keyword Density
+        <button
+          onClick={() => setActiveTab("keywords")}
+          className={`py-2 px-4 font-medium text-sm transition-colors duration-200 ${
+            activeTab === "keywords"
+              ? "text-white border-b-2 border-white"
+              : "text-gray-400 hover:text-white"
+          }`}
+        >
+          Keyword Density ({keywordDensity.length})
         </button>
       </div>
 

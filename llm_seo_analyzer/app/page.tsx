@@ -2,8 +2,7 @@
 import { useState } from "react";
 import { determineStrengthsAndWeaknesses } from "./utils/utils";
 import { getPDF, getScoreColor, getDescriptionForLlmEvaluation, getDescriptionForTopRel } from "./utils/utils";
-import { StrengthsWeaknesses } from "@/components/strengths-weaknesses";
-// import { KeywordDensityDisplay } from "@/components/keyword-density-display";
+import { StrengthsWeaknessesDensity } from "@/components/strengths-weaknesses-keywords";
 import { LoadingAnalysis } from "@/components/loading-analysis";
 
 // Disable static generation
@@ -119,7 +118,7 @@ export default function Home() {
     }
   }
   const topicalRelevance: topicalRelevance | undefined = scrapedInfo?.topicalRelevance;
-  // const keywordDensity: [keywordDensityObj] | undefined = scrapedInfo?.keywordDensity;
+  const keywordDensity: [keywordDensityObj] | undefined = scrapedInfo?.keywordDensity;
   const LLMpercentage = llmEvaluation ? (llmEvaluation.ranking.score / 5) * 100 : null;
   const topRelPercentage = topicalRelevance ? (topicalRelevance.score / 10) * 100 : null;
   const arrOfLlmEvauations = llmEvaluation ? llmEvaluation.ranking.questions.map((q, i) => (
@@ -405,9 +404,10 @@ export default function Home() {
                   </div>
 
                   {/* Strengths and Weaknesses Analysis */}
-                  <StrengthsWeaknesses
+                  <StrengthsWeaknessesDensity
                     strengths={analysisResults.strengths}
                     weaknesses={analysisResults.weaknesses}
+                    keywordDensity={keywordDensity!}
                   />
                 </div>
 
