@@ -114,7 +114,7 @@ export function StrengthsWeaknessesDensity({
       : keywordsPage === keywordsPageCount - 1;
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
+    <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 flex flex-col min-h-[400px]">
       <h2 className="text-xl font-semibold mb-4 text-white">
         Site Analysis Summary
       </h2>
@@ -154,12 +154,12 @@ export function StrengthsWeaknessesDensity({
       </div>
 
       {/* Content */}
-      <div className="space-y-4">
+      <div className="flex-grow space-y-4">
         {Array.isArray(content) ? content : <>{content}</>}
       </div>
 
       {/* Pagination Buttons */}
-      <div className="mt-6 flex justify-between">
+      <div className="flex justify-between mt-4">
         <button
           onClick={handlePrev}
           disabled={atStart}
