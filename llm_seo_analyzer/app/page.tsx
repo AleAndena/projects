@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { determineStrengthsAndWeaknesses } from "./utils/utils";
-import { getPDF, getScoreColor, getDescriptionForLlmEvaluation, getDescriptionForTopRel } from "./utils/utils";
+import { getScoreColor, getDescriptionForLlmEvaluation, getDescriptionForTopRel } from "./utils/utils";
 import { StrengthsWeaknesses } from "@/components/strengths-weaknesses";
 // import { KeywordDensityDisplay } from "@/components/keyword-density-display";
 import { LoadingAnalysis } from "@/components/loading-analysis";
@@ -18,6 +18,18 @@ export default function Home() {
   const [showCompletion, setShowCompletion] = useState(false);
   const [analysisResults, setAnalysisResults] = useState<{ strengths: strengthWeakness[], weaknesses: strengthWeakness[] }>({ strengths: [], weaknesses: [] });
   const [llmEvalIndex, setLlmEvalIndex] = useState(0);
+
+  // state for getPDF to be imported
+  const [getPDF, setGetPDF] = useState<(() => void) | null>(null);
+
+  // Dynamically load getPDF
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      import('./utils/utils').then((module) => {
+        setGetPDF(() => module.getPDF);
+      });
+    }
+  }, []);
 
   async function scrapeAndAnalyze(urlToCheck: string) {
     try {
@@ -410,12 +422,20 @@ export default function Home() {
                 {/* PDF Export Button */}
                 <div className="flex justify-end mt-4">
                   <button
-                    onClick={getPDF}
+                    onClick={getPDF ? getPDF : () => console.log('PDF export not available')}
                     className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded"
                   >
                     Export PDF
                   </button>
                 </div>
+                {/* <div className="flex justify-end mt-4">
+                  <button
+                    onClick={getPDF}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded"
+                  >
+                    Export PDF
+                  </button>
+                </div> */}
               </div>
             )}
 
