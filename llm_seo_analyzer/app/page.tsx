@@ -148,7 +148,7 @@ export default function Home() {
   )) : null;
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white" id="analysis-page">
       <div className="flex">
         {/* Sidebar */}
         <div className="w-16 bg-black min-h-screen border-r border-gray-800 flex flex-col items-center py-6 space-y-6">
@@ -357,7 +357,7 @@ export default function Home() {
                       </div>
                     </div>
                     <div className="flex-1">
-                      <div className="space-y-6">
+                      <div className="space-y-6" id="llm-evals">
                         {llmEvaluation && arrOfLlmEvaluations ? (
                           arrOfLlmEvaluations[llmEvalIndex]
                         ) : (
@@ -365,7 +365,7 @@ export default function Home() {
                         )}
                       </div>
                     </div>
-                    <div className="mt-6 flex justify-between">
+                    <div className="mt-6 flex justify-between" id="llm-button-container">
                       <button
                         onClick={decrementLlmEvalIndex}
                         className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
@@ -392,9 +392,9 @@ export default function Home() {
                 </div>
 
                 {/* PDF Export Button */}
-                <div className="flex justify-end mt-4">
+                <div className="flex justify-end mt-4" id="get-pdf-button">
                   <button
-                    onClick={getPDF}
+                    onClick={() => getPDF(arrOfLlmEvaluations!)}
                     className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded"
                   >
                     Export PDF

@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import html2canvas from 'html2canvas-pro';
 import jsPDF from 'jspdf';
+import { JSX } from 'react';
 
 function formatHeadersForAI(headers: { type: string; text: string; }[]) {
     return headers
@@ -33,22 +34,72 @@ async function promptToAi(systemContent: string, userContent: string, maxTokens:
 
 // Source of logic for making the PDF:
 // https://blog.risingstack.com/pdf-from-html-node-js-puppeteer/
-function getPDF() {
+function getPDF(arrOfLlmEvaluations: JSX.Element[]) {
     if (typeof window === 'undefined' || typeof document === 'undefined') {
         console.warn('getPDF cannot run on the server');
         return;
     }
     try {
         const domElement = document.getElementById('analysis-page');
-        const pdfButton = document.getElementById('get-pdf-button');
-
-        if (!pdfButton || !domElement) {
-            throw new Error("Could not find `analysis-page` or `get-pdf-button` element");
+        if (!domElement) {
+            throw new Error("Could not find `analysis-page` element");
         }
 
         html2canvas(domElement, {
-            onclone: () => {
-                pdfButton.style.visibility = 'hidden';
+            onclone: (clonedDoc) => {
+                const pdfButton = clonedDoc.getElementById('get-pdf-button');
+                const paginatedLlmContent = clonedDoc.getElementById('llm-evals');
+                const llmEvalButtonContainer = clonedDoc.getElementById('llm-button-container');
+
+                // remove unnecessary buttons for the PDF
+                if(pdfButton) pdfButton.style.visibility = 'hidden';
+                if(llmEvalButtonContainer) llmEvalButtonContainer.innerHTML = "";
+
+                // remove paginated area of llm evals, and replace with all of them showing up
+                if (paginatedLlmContent && arrOfLlmEvaluations) {
+                    paginatedLlmContent.innerHTML = "";
+
+                    const allEvalsContainer = clonedDoc.createElement("div");
+                    allEvalsContainer.className = "space-y-6";
+
+                    // Function to convert React element to DOM
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const renderToDom = (element: any, container: HTMLElement) => {
+                        if (typeof element === 'string') {
+                            container.appendChild(clonedDoc.createTextNode(element));
+                            return;
+                        }
+                        if (!element || !element.props) return;
+
+                        const domNode = clonedDoc.createElement(element.type || 'div');
+                        if (element.props.className) {
+                            domNode.className = element.props.className;
+                        }
+
+                        // Handle children
+                        if (element.props.children) {
+                            if (Array.isArray(element.props.children)) {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                element.props.children.forEach((child: any) => {
+                                    renderToDom(child, domNode);
+                                });
+                            } else {
+                                renderToDom(element.props.children, domNode);
+                            }
+                        }
+
+                        container.appendChild(domNode);
+                    };
+
+                    // Append all LLM evaluations
+                    arrOfLlmEvaluations.forEach((evalItem) => {
+                        const evalDiv = clonedDoc.createElement('div');
+                        renderToDom(evalItem, evalDiv);
+                        allEvalsContainer.appendChild(evalDiv);
+                    });
+
+                    paginatedLlmContent.appendChild(allEvalsContainer);
+                }
             }
         })
             .then((canvas) => {
@@ -122,10 +173,10 @@ function determineStrengthsAndWeaknesses(
     if (llmEvalScore >= 1) {
         const dynamicMessage =
             llmEvalScore === 1 ? "Your URL showed up once! This is actually a very good start and is a solid foundation to build upon." :
-            llmEvalScore === 2 ? "Your URL showed up twice! A very strong baseline that very likely outperforms other competitors." :
-            llmEvalScore === 3 ? "Your URL showed up three times! Your site has great visibility that can be maximized even further." :
-            llmEvalScore === 4 ? "Your URL showed up four times! Your site has incredible recognition which can be even further improved." :
-            "Your URL showed up FIVE times, a perfect score! Your site has outstanding visibility which can be improved EVEN FURTHER."
+                llmEvalScore === 2 ? "Your URL showed up twice! A very strong baseline that very likely outperforms other competitors." :
+                    llmEvalScore === 3 ? "Your URL showed up three times! Your site has great visibility that can be maximized even further." :
+                        llmEvalScore === 4 ? "Your URL showed up four times! Your site has incredible recognition which can be even further improved." :
+                            "Your URL showed up FIVE times, a perfect score! Your site has outstanding visibility which can be improved EVEN FURTHER."
         arrOfStrengths.push({
             name: "LLM Evaluation: How many times did your URL show up in the AI's responses to the questions.",
             message: dynamicMessage
