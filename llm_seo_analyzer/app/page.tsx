@@ -4,6 +4,7 @@ import { determineStrengthsAndWeaknesses } from "./utils/utils";
 import { getPDF, getScoreColor, getDescriptionForLlmEvaluation, getDescriptionForTopRel } from "./utils/utils";
 import { StrengthsWeaknessesDensity } from "@/components/strengths-weaknesses-keywords";
 import { LoadingAnalysis } from "@/components/loading-analysis";
+import Image from 'next/image';
 
 // Disable static generation
 export const dynamic = 'force-dynamic'
@@ -153,24 +154,13 @@ export default function Home() {
         {/* Sidebar */}
         <div className="w-16 bg-black min-h-screen border-r border-gray-800 flex flex-col items-center py-6 space-y-6">
           <div className="p-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"></path>
-              <path d="M7 7h10v3H7z"></path>
-              <path d="M7 12h2v5H7z"></path>
-              <path d="M12 12h5v5h-5z"></path>
-            </svg>
+            <Image src="/incubella-icon-color.png" alt="Home nav bar logo" width="32" height="32" />
           </div>
           <div className="p-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <rect x="7" y="7" width="3" height="9"></rect>
-              <rect x="14" y="7" width="3" height="5"></rect>
-            </svg>
+            <Image src="/menu.png" alt="Main page nav bar logo" width="32" height="32" />
           </div>
           <div className="p-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-            </svg>
+            <Image src="/shield-plus.png" alt="Coming soon nav bar logo" width="32" height="32" />
           </div>
         </div>
 
@@ -190,45 +180,11 @@ export default function Home() {
               </p>
 
               {/* LLM Icons */}
-              <div className="flex space-x-4 mt-4">
-                <div className="flex items-center">
-                  <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center mr-1">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-                  <span className="text-sm text-gray-300">OpenAI</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center mr-1">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="2" />
-                      <path d="M12 8V16" stroke="white" strokeWidth="2" />
-                      <path d="M8 12H16" stroke="white" strokeWidth="2" />
-                    </svg>
-                  </div>
-                  <span className="text-sm text-gray-300">Claude</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center mr-1">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-                  <span className="text-sm text-gray-300">Google AI</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-6 h-6 rounded-full bg-gray-700 flex items-center justify-center mr-1">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M4 18L20 18" stroke="white" strokeWidth="2" strokeLinecap="round" />
-                      <path d="M4 12L20 12" stroke="white" strokeWidth="2" strokeLinecap="round" />
-                      <path d="M4 6L20 6" stroke="white" strokeWidth="2" strokeLinecap="round" />
-                    </svg>
-                  </div>
-                  <span className="text-sm text-gray-300">Bing</span>
-                </div>
+              <div className="flex space-x-4 mt-6 max-w-lg">
+                <Image src="/open-ai-logo.png" alt="open ai logo" width="250" height="41" />
+                <Image src="/claude-logo.png" alt="claude logo" width="220" height="48" />
+                <Image src="/google-ai-logo.png" alt="google ai logo" width="204" height="49" />
+                <Image src="/bing-logo.png" alt="bing logo" width="130" height="53" />
               </div>
             </div>
 
@@ -318,15 +274,16 @@ export default function Home() {
                   </div>
 
                   {/* Strengths Card */}
-                  <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                    <div className="flex items-center">
-                      <div>
-                        <div className="text-2xl font-bold text-white">
+                  <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 flex justify-center">
+                      <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
+                        <Image src="/strong.png" alt="flexing bicep logo" width="24" height="24" />
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-white mt-2">
                           {analysisResults.strengths.length}
                         </div>
                         <div className="text-sm text-gray-400 mt-1">Strengths</div>
                       </div>
-                    </div>
                   </div>
 
                   {/* Weaknesses Card */}
