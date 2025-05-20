@@ -218,12 +218,25 @@ export default function Home() {
               )}
             </div>
 
-            {/* Info Text */}
-            <div className="mb-8 text-sm text-gray-400">
-              <ul className="space-y-1">
-                <li>• See what LLMs say about your brand and use it to your advantage</li>
-                <li>• If your brand falls short, reach out to us so we can change that for you!</li>
-              </ul>
+            {/* Info Text + CSV Button */}
+            <div className="mb-8 flex justify-between items-start">
+              {/* Info Text */}
+              <div className="text-sm text-gray-400">
+                <ul className="space-y-1">
+                  <li>• See what LLMs say about your brand and use it to your advantage</li>
+                  <li>• If your brand falls short, reach out to us so we can change that for you!</li>
+                </ul>
+              </div>
+
+              {/* CSV Export Button (only when results exist) */}
+              {llmEvaluation && scrapedInfo && (
+                <button
+                  onClick={() => getCSV(llmEvaluation, analysisResults, keywordDensity!)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm whitespace-nowrap"
+                >
+                  Export as CSV
+                </button>
+              )}
             </div>
 
             {/* Results Grid - only shown when results are available */}
@@ -275,15 +288,15 @@ export default function Home() {
 
                   {/* Strengths Card */}
                   <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 flex justify-center">
-                      <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
-                        <Image src="/strong.png" alt="flexing bicep logo" width="24" height="24" />
+                    <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
+                      <Image src="/strong.png" alt="flexing bicep logo" width="24" height="24" />
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-white mt-2">
+                        {analysisResults.strengths.length}
                       </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-white mt-2">
-                          {analysisResults.strengths.length}
-                        </div>
-                        <div className="text-sm text-gray-400 mt-1">Strengths</div>
-                      </div>
+                      <div className="text-sm text-gray-400 mt-1">Strengths</div>
+                    </div>
                   </div>
 
                   {/* Weaknesses Card */}
@@ -346,16 +359,6 @@ export default function Home() {
                     weaknesses={analysisResults.weaknesses}
                     keywordDensity={keywordDensity!}
                   />
-                </div>
-
-                {/* CSV Export Button */}
-                <div className="flex justify-end mt-4" id="get-csv-button">
-                  <button
-                    onClick={() => getCSV(llmEvaluation, analysisResults, keywordDensity!)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded"
-                  >
-                    Export as CSV
-                  </button>
                 </div>
               </div>
             )}
