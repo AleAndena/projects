@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
-import { mkConfig, generateCsv, download } from "export-to-csv";
 import { transformKeywordDensity, transformLLMEvaluation, transformStrengthsWeaknesses } from './csv_utils';
+import { utils, writeFile } from 'xlsx';
 
 function formatHeadersForAI(headers: { type: string; text: string; }[]) {
     return headers
@@ -50,33 +50,28 @@ async function promptToAi(systemContent: string, userContent: string, maxTokens:
     return apiResult.choices[0].message.content;
 }
 
-// Function to turn site analysis into CSV format for the user to save
-function getCSV(
-    llmEvaluation: LLMEvaluation,
-    analysisResults: { strengths: strengthWeakness[]; weaknesses: strengthWeakness[]; },
-    keywordDensity: keywordDensityObj[]
+function getExcelFile(
+  llmEvaluation: LLMEvaluation,
+  analysisResults: { strengths: strengthWeakness[]; weaknesses: strengthWeakness[]; },
+  keywordDensity: keywordDensityObj[]
 ) {
-    if (llmEvaluation && analysisResults && keywordDensity) {
-        const csvConfig = mkConfig({ useKeysAsHeaders: true });
+  if (llmEvaluation && analysisResults && keywordDensity) {
+    const wb = utils.book_new();
+    const llmData = transformLLMEvaluation(llmEvaluation);
+    const swData = transformStrengthsWeaknesses(analysisResults);
+    const kdData = transformKeywordDensity(keywordDensity);
 
-        // Export LLMEvaluation
-        const llmConfig = { ...csvConfig, filename: `llm_evaluation_${new Date().toISOString().split('T')[0]}` };
-        const llmData = transformLLMEvaluation(llmEvaluation);
-        const llmCsv = generateCsv(llmConfig)(llmData);
-        download(llmConfig)(llmCsv);
+    const llmWs = utils.json_to_sheet(llmData);
+    const swWs = utils.json_to_sheet(swData);
+    const kdWs = utils.json_to_sheet(kdData);
 
-        // Export Strengths and Weaknesses
-        const swConfig = { ...csvConfig, filename: `strengths_weaknesses_${new Date().toISOString().split('T')[0]}` };
-        const swData = transformStrengthsWeaknesses(analysisResults);
-        const swCsv = generateCsv(swConfig)(swData);
-        download(swConfig)(swCsv);
+    utils.book_append_sheet(wb, llmWs, "LLM Evaluation");
+    utils.book_append_sheet(wb, swWs, "Strengths and Weaknesses");
+    utils.book_append_sheet(wb, kdWs, "Keyword Density");
 
-        // Transform Keyword Density
-        const kdConfig = { ...csvConfig, filename: `keyword_density_${new Date().toISOString().split('T')[0]}` };
-        const kdData = transformKeywordDensity(keywordDensity);
-        const kdCsv = generateCsv(kdConfig)(kdData);
-        download(kdConfig)(kdCsv);
-    }
+    const date = new Date().toISOString().split('T')[0]; // e.g., 2025-05-20
+    writeFile(wb, `site_analysis_${date}.xlsx`);
+  }
 }
 
 // Helper function to render color based on score
@@ -259,7 +254,7 @@ function determineStrengthsAndWeaknesses(
 export {
     formatHeadersForAI,
     promptToAi,
-    getCSV,
+    getExcelFile,
     getScoreColor,
     determineStrengthsAndWeaknesses,
     getDescriptionForLlmEvaluation,

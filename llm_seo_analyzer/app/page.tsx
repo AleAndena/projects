@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { determineStrengthsAndWeaknesses } from "./utils/utils";
-import { getCSV, getScoreColor, getDescriptionForLlmEvaluation, getDescriptionForTopRel } from "./utils/utils";
+import { getExcelFile, getScoreColor, getDescriptionForLlmEvaluation, getDescriptionForTopRel } from "./utils/utils";
 import { StrengthsWeaknessesDensity } from "@/components/strengths-weaknesses-keywords";
 import { LoadingAnalysis } from "@/components/loading-analysis";
 import Image from 'next/image';
@@ -231,7 +231,7 @@ export default function Home() {
               {/* CSV Export Button (only when results exist) */}
               {llmEvaluation && scrapedInfo && (
                 <button
-                  onClick={() => getCSV(llmEvaluation, analysisResults, keywordDensity!)}
+                  onClick={() => getExcelFile(llmEvaluation, analysisResults, keywordDensity!)}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm whitespace-nowrap"
                 >
                   Export as CSV
