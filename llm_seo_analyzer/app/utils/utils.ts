@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { mkConfig, generateCsv, download } from "export-to-csv";
-import { transformLLMEvaluation, transformStrengthsWeaknesses } from './csv_utils';
+import { transformKeywordDensity, transformLLMEvaluation, transformStrengthsWeaknesses } from './csv_utils';
 
 function formatHeadersForAI(headers: { type: string; text: string; }[]) {
     return headers
@@ -9,6 +9,25 @@ function formatHeadersForAI(headers: { type: string; text: string; }[]) {
         .join(',')
         || '';
 }
+
+// Determine message based on density percentage
+function getDensityFeedback(density: number) {
+    if (density >= 2.5) {
+        return "Too high - may be seen as keyword stuffing";
+    } else if (density >= 2.0 && density < 2.5) {
+        return "Getting high - consider possibly reducing slightly";
+    } else if (density >= 1.75 && density < 2.0) {
+        return "Good, but on the higher side";
+    } else if (density >= 1.25 && density < 1.75) {
+        return "Optimal keyword density";
+    } else if (density >= 1.0 && density < 1.25) {
+        return "Good, but could be higher";
+    } else if (density >= 0.5 && density < 1.0) {
+        return "Low - consider increasing usage";
+    } else {
+        return "Too low - increase keyword usage";
+    }
+};
 
 async function promptToAi(systemContent: string, userContent: string, maxTokens: number, isJson: boolean) {
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || '' });
@@ -32,22 +51,32 @@ async function promptToAi(systemContent: string, userContent: string, maxTokens:
 }
 
 // Function to turn site analysis into CSV format for the user to save
-function getCSV(llmEvaluation: LLMEvaluation, analysisResults: { strengths: strengthWeakness[]; weaknesses: strengthWeakness[]; }){
-    if (llmEvaluation && analysisResults) {
-    const csvConfig = mkConfig({ useKeysAsHeaders: true });
+function getCSV(
+    llmEvaluation: LLMEvaluation,
+    analysisResults: { strengths: strengthWeakness[]; weaknesses: strengthWeakness[]; },
+    keywordDensity: keywordDensityObj[]
+) {
+    if (llmEvaluation && analysisResults && keywordDensity) {
+        const csvConfig = mkConfig({ useKeysAsHeaders: true });
 
-    // Export LLMEvaluation
-    const llmConfig = { ...csvConfig, filename: `llm_evaluation_${new Date().toISOString().split('T')[0]}` };
-    const llmData = transformLLMEvaluation(llmEvaluation);
-    const llmCsv = generateCsv(llmConfig)(llmData);
-    download(llmConfig)(llmCsv);
+        // Export LLMEvaluation
+        const llmConfig = { ...csvConfig, filename: `llm_evaluation_${new Date().toISOString().split('T')[0]}` };
+        const llmData = transformLLMEvaluation(llmEvaluation);
+        const llmCsv = generateCsv(llmConfig)(llmData);
+        download(llmConfig)(llmCsv);
 
-    // Export Strengths and Weaknesses
-    const swConfig = { ...csvConfig, filename: `strengths_weaknesses_${new Date().toISOString().split('T')[0]}` };
-    const swData = transformStrengthsWeaknesses(analysisResults);
-    const swCsv = generateCsv(swConfig)(swData);
-    download(swConfig)(swCsv);
-  }
+        // Export Strengths and Weaknesses
+        const swConfig = { ...csvConfig, filename: `strengths_weaknesses_${new Date().toISOString().split('T')[0]}` };
+        const swData = transformStrengthsWeaknesses(analysisResults);
+        const swCsv = generateCsv(swConfig)(swData);
+        download(swConfig)(swCsv);
+
+        // Transform Keyword Density
+        const kdConfig = { ...csvConfig, filename: `keyword_density_${new Date().toISOString().split('T')[0]}` };
+        const kdData = transformKeywordDensity(keywordDensity);
+        const kdCsv = generateCsv(kdConfig)(kdData);
+        download(kdConfig)(kdCsv);
+    }
 }
 
 // Helper function to render color based on score
@@ -235,4 +264,5 @@ export {
     determineStrengthsAndWeaknesses,
     getDescriptionForLlmEvaluation,
     getDescriptionForTopRel,
+    getDensityFeedback
 };

@@ -1,3 +1,5 @@
+import { getDensityFeedback } from "@/app/utils/utils";
+
 export function KeywordDensityDisplay({
   keyword,
   densityAsPercent,
@@ -7,25 +9,6 @@ export function KeywordDensityDisplay({
   densityAsPercent: number;
   count: number;
 }) {
-  // Determine message based on density percentage
-  const getDensityFeedback = (density: number) => {
-    if (density >= 2.5) {
-      return "Too high - may be seen as keyword stuffing";
-    } else if (density >= 2.0 && density < 2.5) {
-      return "Getting high - consider possibly reducing slightly";
-    } else if (density >= 1.75 && density < 2.0) {
-      return "Good, but on the higher side";
-    } else if (density >= 1.25 && density < 1.75) {
-      return "Optimal keyword density";
-    } else if (density >= 1.0 && density < 1.25) {
-      return "Good, but could be higher";
-    } else if (density >= 0.5 && density < 1.0) {
-      return "Low - consider increasing usage";
-    } else {
-      return "Too low - increase keyword usage";
-    }
-  };
-
   // Get text color based on density percentage
   const getTextColor = (density: number) => {
     if (density >= 2.5) return "text-red-400";
