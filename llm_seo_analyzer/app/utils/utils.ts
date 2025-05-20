@@ -1,7 +1,6 @@
 import OpenAI from 'openai';
-import html2canvas from 'html2canvas-pro';
-import jsPDF from 'jspdf';
-import { JSX } from 'react';
+import { mkConfig, generateCsv, download } from "export-to-csv";
+import { transformLLMEvaluation, transformStrengthsWeaknesses } from './csv_utils';
 
 function formatHeadersForAI(headers: { type: string; text: string; }[]) {
     return headers
@@ -32,103 +31,23 @@ async function promptToAi(systemContent: string, userContent: string, maxTokens:
     return apiResult.choices[0].message.content;
 }
 
-// Source of logic for making the PDF:
-// https://blog.risingstack.com/pdf-from-html-node-js-puppeteer/
-function getPDF(arrOfLlmEvaluations: JSX.Element[]) {
-    if (typeof window === 'undefined' || typeof document === 'undefined') {
-        console.warn('getPDF cannot run on the server');
-        return;
-    }
-    try {
-        const domElement = document.getElementById('analysis-page');
-        if (!domElement) {
-            throw new Error("Could not find `analysis-page` element");
-        }
+// Function to turn site analysis into CSV format for the user to save
+function getCSV(llmEvaluation: LLMEvaluation, analysisResults: { strengths: strengthWeakness[]; weaknesses: strengthWeakness[]; }){
+    if (llmEvaluation && analysisResults) {
+    const csvConfig = mkConfig({ useKeysAsHeaders: true });
 
-        html2canvas(domElement, {
-            onclone: (clonedDoc) => {
-                const pdfButton = clonedDoc.getElementById('get-pdf-button');
-                const paginatedLlmContent = clonedDoc.getElementById('llm-evals');
-                const llmEvalButtonContainer = clonedDoc.getElementById('llm-button-container');
+    // Export LLMEvaluation
+    const llmConfig = { ...csvConfig, filename: `llm_evaluation_${new Date().toISOString().split('T')[0]}` };
+    const llmData = transformLLMEvaluation(llmEvaluation);
+    const llmCsv = generateCsv(llmConfig)(llmData);
+    download(llmConfig)(llmCsv);
 
-                // remove unnecessary buttons for the PDF
-                if(pdfButton) pdfButton.style.visibility = 'hidden';
-                if(llmEvalButtonContainer) llmEvalButtonContainer.innerHTML = "";
-
-                // remove paginated area of llm evals, and replace with all of them showing up
-                if (paginatedLlmContent && arrOfLlmEvaluations) {
-                    paginatedLlmContent.innerHTML = "";
-
-                    const allEvalsContainer = clonedDoc.createElement("div");
-                    allEvalsContainer.className = "space-y-6";
-
-                    // Function to convert React element to DOM
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const renderToDom = (element: any, container: HTMLElement) => {
-                        if (typeof element === 'string') {
-                            container.appendChild(clonedDoc.createTextNode(element));
-                            return;
-                        }
-                        if (!element || !element.props) return;
-
-                        const domNode = clonedDoc.createElement(element.type || 'div');
-                        if (element.props.className) {
-                            domNode.className = element.props.className;
-                        }
-
-                        // Handle children
-                        if (element.props.children) {
-                            if (Array.isArray(element.props.children)) {
-                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                element.props.children.forEach((child: any) => {
-                                    renderToDom(child, domNode);
-                                });
-                            } else {
-                                renderToDom(element.props.children, domNode);
-                            }
-                        }
-
-                        container.appendChild(domNode);
-                    };
-
-                    // Append all LLM evaluations
-                    arrOfLlmEvaluations.forEach((evalItem) => {
-                        const evalDiv = clonedDoc.createElement('div');
-                        renderToDom(evalItem, evalDiv);
-                        allEvalsContainer.appendChild(evalDiv);
-                    });
-
-                    paginatedLlmContent.appendChild(allEvalsContainer);
-                }
-            }
-        })
-            .then((canvas) => {
-                // convert content to a PNG
-                const imgData = canvas.toDataURL('image/png');
-
-                // get dimensions of the canvas (the captured area)
-                const imgWidthPx = canvas.width;
-                const imgHeightPx = canvas.height;
-
-                // Set the PDF width to 210mm
-                const pdfWidth = 210;
-
-                // Calculate num of pixels per mm based on image width
-                const pxPerMm = imgWidthPx / pdfWidth;
-
-                // Get the PDF height so the entire image fits in the PDF properly without being cut off
-                const pdfHeight = imgHeightPx / pxPerMm;
-
-                // Create the PDF doc with the dimensions gotten above
-                const pdf = new jsPDF('p', 'mm', [pdfWidth, pdfHeight]);
-
-                // Add the image to the PDF then download it
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                pdf.save('analysis.pdf');
-            });
-    } catch (error) {
-        console.error(error);
-    }
+    // Export Strengths and Weaknesses
+    const swConfig = { ...csvConfig, filename: `strengths_weaknesses_${new Date().toISOString().split('T')[0]}` };
+    const swData = transformStrengthsWeaknesses(analysisResults);
+    const swCsv = generateCsv(swConfig)(swData);
+    download(swConfig)(swCsv);
+  }
 }
 
 // Helper function to render color based on score
@@ -279,7 +198,7 @@ function determineStrengthsAndWeaknesses(
     if (topRel && topRel.score >= 6) {
         arrOfStrengths.push({
             name: "Topical Relevance: An AI analysis where we ask the LLM to determine how well the site conveys the main subject and aligns with the topic",
-            message: `At the top of the page, you can find the feedback from AI about the Topical Relevance of your site.`
+            message: `Feedback from LLM analysis:  ${topRel.feedback}`
         });
     } else {
         arrOfWeaknesses.push({
@@ -311,7 +230,7 @@ function determineStrengthsAndWeaknesses(
 export {
     formatHeadersForAI,
     promptToAi,
-    getPDF,
+    getCSV,
     getScoreColor,
     determineStrengthsAndWeaknesses,
     getDescriptionForLlmEvaluation,

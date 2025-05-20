@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { determineStrengthsAndWeaknesses } from "./utils/utils";
-import { getPDF, getScoreColor, getDescriptionForLlmEvaluation, getDescriptionForTopRel } from "./utils/utils";
+import { getCSV, getScoreColor, getDescriptionForLlmEvaluation, getDescriptionForTopRel } from "./utils/utils";
 import { StrengthsWeaknessesDensity } from "@/components/strengths-weaknesses-keywords";
 import { LoadingAnalysis } from "@/components/loading-analysis";
 import Image from 'next/image';
@@ -348,13 +348,13 @@ export default function Home() {
                   />
                 </div>
 
-                {/* PDF Export Button */}
-                <div className="flex justify-end mt-4" id="get-pdf-button">
+                {/* CSV Export Button */}
+                <div className="flex justify-end mt-4" id="get-csv-button">
                   <button
-                    onClick={() => getPDF(arrOfLlmEvaluations!)}
+                    onClick={() => getCSV(llmEvaluation, analysisResults)}
                     className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded"
                   >
-                    Export PDF
+                    Export as CSV
                   </button>
                 </div>
               </div>
