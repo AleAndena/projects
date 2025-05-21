@@ -195,7 +195,7 @@ export default function Home() {
               </p>
 
               {/* LLM Icons */}
-              <div className="flex space-x-4 mt-6 max-w-lg">
+              <div className="flex space-x-6 mt-6 max-w-lg">
                 <Image src="/open-ai-logo.png" alt="open ai logo" width="250" height="41" />
                 <Image src="/claude-logo.png" alt="claude logo" width="220" height="48" />
                 <Image src="/google-ai-logo.png" alt="google ai logo" width="204" height="49" />
@@ -266,12 +266,12 @@ export default function Home() {
                         {/* https://daisyui.com/components/radial-progress/ */}
                         {/* Donut graph to show the score */}
                         <div className={`radial-progress ${llmEvaluation.ranking.score <= 2 ? "text-secondary" : "text-primary"} mr-4`}
-                          style={{ "--value": LLMpercentage!, "--size": "4vw", "--thickness": "0.7vw" } as React.CSSProperties}
+                          style={{ "--value": LLMpercentage!, "--size": "3vw", "--thickness": "0.5vw" } as React.CSSProperties}
                           aria-valuenow={LLMpercentage!}
                           role="progressbar">
                         </div>
                         <div>
-                          <div className="text-2xl font-bold">
+                          <div className="text-xl font-bold">
                             {llmEvaluation.ranking.score}/5 {getDescriptionForLlmEvaluation(llmEvaluation.ranking.score)}
                           </div>
                           <div className="text-sm text-gray-400 mt-1">LLM Evaluation</div>
@@ -287,12 +287,12 @@ export default function Home() {
                         {/* https://daisyui.com/components/radial-progress/ */}
                         {/* Donut graph to show the score */}
                         <div className={`radial-progress ${topicalRelevance!.score <= 6 ? "text-secondary" : "text-primary"} mr-4`}
-                          style={{ "--value": topRelPercentage!, "--size": "4vw", "--thickness": "0.7vw" } as React.CSSProperties}
+                          style={{ "--value": topRelPercentage!, "--size": "3vw", "--thickness": "0.5vw" } as React.CSSProperties}
                           aria-valuenow={topRelPercentage!}
                           role="progressbar">
                         </div>
                         <div>
-                          <div className="text-2xl font-bold">
+                          <div className="text-xl font-bold">
                             {topicalRelevance!.score}/10 {getDescriptionForTopRel(topicalRelevance!.score)}
                           </div>
                           <div className="text-sm text-gray-400 mt-1">Topical Relevance</div>
@@ -302,27 +302,28 @@ export default function Home() {
                   </div>
 
                   {/* Strengths Card */}
-                  <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 flex justify-center">
+                  <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 flex items-center space-x-4">
                     <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
                       <Image src="/strong.png" alt="flexing bicep logo" width="24" height="24" />
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-white mt-2">
+                    <div className="flex items-baseline space-x-2">
+                      <div className="text-2xl font-bold text-white">
                         {analysisResults.strengths.length}
                       </div>
-                      <div className="text-sm text-gray-400 mt-1">Strengths</div>
+                      <div className="text-sm text-gray-400">STRENGTHS</div>
                     </div>
                   </div>
 
                   {/* Weaknesses Card */}
-                  <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                    <div className="flex items-center">
-                      <div>
-                        <div className="text-2xl font-bold text-white">
-                          {analysisResults.weaknesses.length}
-                        </div>
-                        <div className="text-sm text-gray-400 mt-1">Weaknesses</div>
+                  <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
+                      <Image src="/shield-exclamation.png" alt="shield with exclamation point" width="24" height="24" />
+                    </div>
+                    <div className="flex items-baseline space-x-2">
+                      <div className="text-2xl font-bold text-white">
+                        {analysisResults.weaknesses.length}
                       </div>
+                      <div className="text-sm text-gray-400">WEAKNESSES</div>
                     </div>
                   </div>
                 </div>
