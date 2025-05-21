@@ -5,6 +5,8 @@ import { getExcelFile, getScoreColor, getDescriptionForLlmEvaluation, getDescrip
 import { StrengthsWeaknessesDensity } from "@/components/strengths-weaknesses-keywords";
 import { LoadingAnalysis } from "@/components/loading-analysis";
 import Image from 'next/image';
+import Link from "next/link";
+import { usePathname } from 'next/navigation';
 
 // Disable static generation
 export const dynamic = 'force-dynamic'
@@ -22,6 +24,8 @@ export default function Home() {
   const [showCompletion, setShowCompletion] = useState(false);
   const [analysisResults, setAnalysisResults] = useState<{ strengths: strengthWeakness[], weaknesses: strengthWeakness[] }>({ strengths: [], weaknesses: [] });
   const [llmEvalIndex, setLlmEvalIndex] = useState(0);
+
+  const pathname = usePathname();
 
   async function scrapeAndAnalyze(urlToCheck: string) {
     try {
@@ -152,15 +156,26 @@ export default function Home() {
     <div className="min-h-screen bg-black text-white" id="analysis-page">
       <div className="flex">
         {/* Sidebar */}
-        <div className="w-16 bg-black min-h-screen border-r border-gray-800 flex flex-col items-center py-6 space-y-6">
-          <div className="p-2">
-            <Image src="/incubella-icon-color.png" alt="Home nav bar logo" width="32" height="32" />
+        <div className="w-16 bg-black min-h-[95vh] border-2 border-gray-800 flex flex-col items-center py-6 space-y-6 rounded-lg m-2">
+          <div className="group relative">
+            <div>
+              <Link href="https://www.incubella.co"><Image src="/incubella-icon-color.png" alt="Home nav bar logo" width="32" height="32" /></Link>
+            </div>
+            <span className="absolute left-full ml-2 w-24 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 invisible group-hover:visible">Incubella Home Page</span>
           </div>
-          <div className="p-2">
-            <Image src="/menu.png" alt="Main page nav bar logo" width="32" height="32" />
+          <div className="group relative">
+            {/* <div className="p-2 rounded-lg hover:bg-gray-700 transition-colors duration-200"> */}
+            <div className={`p-2 rounded-lg hover:bg-gray-700 transition-colors duration-200 ${pathname === '/' ? 'bg-gray-700' : ''}`}>
+              <Link href="/"><Image src="/menu.png" alt="Main page nav bar logo" width="32" height="32" /></Link>
+            </div>
+            <span className="absolute left-full ml-2 w-24 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 invisible group-hover:visible">Analysis Page</span>
           </div>
-          <div className="p-2">
-            <Image src="/shield-plus.png" alt="Coming soon nav bar logo" width="32" height="32" />
+          <div className="group relative">
+            {/* <div className="p-2 rounded-lg hover:bg-gray-700 transition-colors duration-200"> */}
+            <div className={`p-2 rounded-lg hover:bg-gray-700 transition-colors duration-200 ${pathname === '/comingsoon' ? 'bg-gray-700' : ''}`}>
+              <Link href="/comingsoon"><Image src="/shield-plus.png" alt="Coming soon nav bar logo" width="32" height="32" /></Link>
+            </div>
+            <span className="absolute left-full ml-2 w-24 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 invisible group-hover:visible">Coming Soon!</span>
           </div>
         </div>
 
