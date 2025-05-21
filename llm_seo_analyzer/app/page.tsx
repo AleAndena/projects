@@ -31,6 +31,13 @@ export default function Home() {
     try {
       setLoading(true);
       setShowCompletion(false);
+      
+      // reset all the info when a new URL is put in
+      setScrapedInfo(null);
+      setLlmEvaluation(null);
+      setAnalysisResults({ strengths: [], weaknesses: [] })
+      setLlmEvalIndex(0);
+
       // get an object containing the scraped information of the site
       const formattedScrapingUrl = `/api/scrape/${encodeURIComponent(urlToCheck)}`;
       const response = await fetch(formattedScrapingUrl);
@@ -64,8 +71,6 @@ export default function Home() {
         });
         setAnalysisResults(results);
       }
-      // Wait 1 second before showing full analysis for smoother transition between loading screen and analysis
-      await new Promise(resolve => setTimeout(resolve, 1000));
     } catch (error) {
       console.error('Error in scraping and analysis:', error);
     } finally {
