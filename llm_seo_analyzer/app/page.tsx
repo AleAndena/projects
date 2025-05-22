@@ -5,7 +5,6 @@ import { getExcelFile, getScoreColor, getDescriptionForLlmEvaluation, getDescrip
 import { StrengthsWeaknessesDensity } from "@/components/strengths-weaknesses-keywords";
 import { LoadingAnalysis } from "@/components/loading-analysis";
 import Image from 'next/image';
-import { SideBar } from "@/components/sidebar";
 
 // Disable static generation
 export const dynamic = 'force-dynamic'
