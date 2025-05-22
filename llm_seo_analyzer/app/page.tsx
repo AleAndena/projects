@@ -1,14 +1,16 @@
 "use client";
 import { useState } from "react";
 import { determineStrengthsAndWeaknesses } from "./utils/utils";
-import { getScoreColor, getDescriptionForTopRel } from "./utils/utils";
+import { getScoreColor } from "./utils/utils";
 import { StrengthsWeaknessesDensity } from "@/components/strengths-weaknesses-keywords";
 import { LoadingAnalysis } from "@/components/loading-analysis";
 import { getExcelFile } from "./utils/csv_utils";
 import Image from 'next/image';
 import { Header } from "@/components/header";
-import { LlmEvalCard } from "@/components/llm-eval-card";
-import { TopRelCard } from "@/components/top-rel-card";
+import { LlmEvalCard } from "@/components/cards/llm-eval-card";
+import { TopRelCard } from "@/components/cards/top-rel-card";
+import { StrengthCard } from "@/components/cards/strength-card";
+import { WeaknessCard } from "@/components/cards/weakness-card";
 
 // Disable static generation
 export const dynamic = 'force-dynamic'
@@ -221,36 +223,13 @@ export default function Home() {
               <div>
                 {/* Analysis Summary Cards */}
                 <div className="grid grid-cols-4 gap-4 mb-8">
-                  
                   <LlmEvalCard llmEval={llmEvaluation} llmPercentage={LLMpercentage!}/>
 
                   <TopRelCard topicalRel={topicalRelevance!} topRelPercentage={topRelPercentage!}/>
 
-                  {/* Strengths Card */}
-                  <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
-                      <Image src="/strong.png" alt="flexing bicep logo" width="24" height="24" />
-                    </div>
-                    <div className="flex items-baseline space-x-2">
-                      <div className="text-2xl font-bold text-white">
-                        {analysisResults.strengths.length}
-                      </div>
-                      <div className="text-sm text-gray-400">STRENGTHS</div>
-                    </div>
-                  </div>
-
-                  {/* Weaknesses Card */}
-                  <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
-                      <Image src="/shield-exclamation.png" alt="shield with exclamation point" width="24" height="24" />
-                    </div>
-                    <div className="flex items-baseline space-x-2">
-                      <div className="text-2xl font-bold text-white">
-                        {analysisResults.weaknesses.length}
-                      </div>
-                      <div className="text-sm text-gray-400">WEAKNESSES</div>
-                    </div>
-                  </div>
+                  <StrengthCard strengthLength={analysisResults.strengths.length}/>
+                  
+                  <WeaknessCard weaknessLength={analysisResults.weaknesses.length}/>                  
                 </div>
 
                 <div className="mt-8 grid gap-6 md:grid-cols-2">
