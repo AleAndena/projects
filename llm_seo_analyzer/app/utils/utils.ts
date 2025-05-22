@@ -49,7 +49,7 @@ async function promptToAi(systemContent: string, userContent: string, maxTokens:
 }
 
 // Helper function to render color based on score
-const getScoreColor = (score: number) => {
+function getScoreColor (score: number) {
     if (score >= 2) return 'text-green-700';
     if (score >= 1) return 'text-yellow-700';
     return 'text-red-700';
