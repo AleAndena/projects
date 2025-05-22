@@ -2,8 +2,8 @@
 import type { Metadata } from "next";
 import { Roboto_Mono } from "next/font/google";
 import "./globals.css";
+import { SideBar } from "@/components/sidebar";
 
-// load Roboto Mono (feel free to tweak weights or subsets)
 const robotoMono = Roboto_Mono({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
@@ -24,7 +24,12 @@ export default function RootLayout({
     <html lang="en">
       {/* apply the Roboto Mono class to body */}
       <body className={`${robotoMono.className} antialiased`}>
-        {children}
+        <div className="min-h-screen bg-black text-white" id="analysis-page">
+          <div className="flex">
+            <SideBar />
+            {children}
+          </div>
+        </div>
       </body>
     </html>
   );
