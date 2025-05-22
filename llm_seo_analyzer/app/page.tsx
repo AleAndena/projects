@@ -5,7 +5,6 @@ import { getScoreColor } from "./utils/utils";
 import { StrengthsWeaknessesDensity } from "@/components/strengths-weaknesses-keywords";
 import { LoadingAnalysis } from "@/components/loading-analysis";
 import { getExcelFile } from "./utils/csv_utils";
-import Image from 'next/image';
 import { Header } from "@/components/header";
 import { LlmEvalCard } from "@/components/cards/llm-eval-card";
 import { TopRelCard } from "@/components/cards/top-rel-card";
@@ -130,6 +129,7 @@ export default function Home() {
     }
   }
 
+  // conditional variables that are used to show information after analysis is complete
   const topicalRelevance: topicalRelevance | undefined = scrapedInfo?.topicalRelevance;
   const keywordDensity: [keywordDensityObj] | undefined = scrapedInfo?.keywordDensity;
   const LLMpercentage = llmEvaluation ? (llmEvaluation.ranking.score / 5) * 100 : null;
