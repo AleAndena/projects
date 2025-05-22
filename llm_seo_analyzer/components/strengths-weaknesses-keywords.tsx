@@ -149,7 +149,7 @@ export function StrengthsWeaknessesDensity({
               : "text-gray-400 hover:text-white"
           }`}
         >
-          Keyword Density ({keywordDensity.length})
+          Keyword Density
         </button>
       </div>
 
