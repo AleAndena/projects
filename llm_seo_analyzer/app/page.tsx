@@ -1,9 +1,10 @@
 "use client";
 import { useState } from "react";
 import { determineStrengthsAndWeaknesses } from "./utils/utils";
-import { getExcelFile, getScoreColor, getDescriptionForLlmEvaluation, getDescriptionForTopRel } from "./utils/utils";
+import { getScoreColor, getDescriptionForLlmEvaluation, getDescriptionForTopRel } from "./utils/utils";
 import { StrengthsWeaknessesDensity } from "@/components/strengths-weaknesses-keywords";
 import { LoadingAnalysis } from "@/components/loading-analysis";
+import { getExcelFile } from "./utils/csv_utils";
 import Image from 'next/image';
 
 // Disable static generation

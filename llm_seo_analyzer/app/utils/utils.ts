@@ -1,6 +1,4 @@
 import OpenAI from 'openai';
-import { transformKeywordDensity, transformLLMEvaluation, transformStrengthsWeaknesses } from './csv_utils';
-import { utils, writeFile } from 'xlsx';
 
 function formatHeadersForAI(headers: { type: string; text: string; }[]) {
     return headers
@@ -48,30 +46,6 @@ async function promptToAi(systemContent: string, userContent: string, maxTokens:
 
     // extract the answer from the API's response
     return apiResult.choices[0].message.content;
-}
-
-function getExcelFile(
-  llmEvaluation: LLMEvaluation,
-  analysisResults: { strengths: strengthWeakness[]; weaknesses: strengthWeakness[]; },
-  keywordDensity: keywordDensityObj[]
-) {
-  if (llmEvaluation && analysisResults && keywordDensity) {
-    const wb = utils.book_new();
-    const llmData = transformLLMEvaluation(llmEvaluation);
-    const swData = transformStrengthsWeaknesses(analysisResults);
-    const kdData = transformKeywordDensity(keywordDensity);
-
-    const llmWs = utils.json_to_sheet(llmData);
-    const swWs = utils.json_to_sheet(swData);
-    const kdWs = utils.json_to_sheet(kdData);
-
-    utils.book_append_sheet(wb, llmWs, "LLM Evaluation");
-    utils.book_append_sheet(wb, swWs, "Strengths and Weaknesses");
-    utils.book_append_sheet(wb, kdWs, "Keyword Density");
-
-    const date = new Date().toISOString().split('T')[0]; // e.g., 2025-05-20
-    writeFile(wb, `site_analysis_${date}.xlsx`);
-  }
 }
 
 // Helper function to render color based on score
@@ -254,7 +228,6 @@ function determineStrengthsAndWeaknesses(
 export {
     formatHeadersForAI,
     promptToAi,
-    getExcelFile,
     getScoreColor,
     determineStrengthsAndWeaknesses,
     getDescriptionForLlmEvaluation,

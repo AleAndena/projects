@@ -1,4 +1,5 @@
 import { getDensityFeedback } from "@/app/utils/utils";
+import { utils, writeFile } from 'xlsx';
 
 export function transformLLMEvaluation(llmEvaluation: LLMEvaluation) {
     const data = [];
@@ -59,6 +60,30 @@ export function transformStrengthsWeaknesses(data: { strengths: strengthWeakness
     }
 
     return result;
+}
+
+export function getExcelFile(
+  llmEvaluation: LLMEvaluation,
+  analysisResults: { strengths: strengthWeakness[]; weaknesses: strengthWeakness[]; },
+  keywordDensity: keywordDensityObj[]
+) {
+  if (llmEvaluation && analysisResults && keywordDensity) {
+    const wb = utils.book_new();
+    const llmData = transformLLMEvaluation(llmEvaluation);
+    const swData = transformStrengthsWeaknesses(analysisResults);
+    const kdData = transformKeywordDensity(keywordDensity);
+
+    const llmWs = utils.json_to_sheet(llmData);
+    const swWs = utils.json_to_sheet(swData);
+    const kdWs = utils.json_to_sheet(kdData);
+
+    utils.book_append_sheet(wb, llmWs, "LLM Evaluation");
+    utils.book_append_sheet(wb, swWs, "Strengths and Weaknesses");
+    utils.book_append_sheet(wb, kdWs, "Keyword Density");
+
+    const date = new Date().toISOString().split('T')[0];
+    writeFile(wb, `site_analysis_${date}.xlsx`);
+  }
 }
 
 // Transform function for keyword density
