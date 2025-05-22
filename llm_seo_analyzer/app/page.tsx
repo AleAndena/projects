@@ -1,12 +1,14 @@
 "use client";
 import { useState } from "react";
 import { determineStrengthsAndWeaknesses } from "./utils/utils";
-import { getScoreColor, getDescriptionForLlmEvaluation, getDescriptionForTopRel } from "./utils/utils";
+import { getScoreColor, getDescriptionForTopRel } from "./utils/utils";
 import { StrengthsWeaknessesDensity } from "@/components/strengths-weaknesses-keywords";
 import { LoadingAnalysis } from "@/components/loading-analysis";
 import { getExcelFile } from "./utils/csv_utils";
 import Image from 'next/image';
 import { Header } from "@/components/header";
+import { LlmEvalCard } from "@/components/llm-eval-card";
+import { TopRelCard } from "@/components/top-rel-card";
 
 // Disable static generation
 export const dynamic = 'force-dynamic'
@@ -219,47 +221,10 @@ export default function Home() {
               <div>
                 {/* Analysis Summary Cards */}
                 <div className="grid grid-cols-4 gap-4 mb-8">
-                  {/* LLM Evaluation Card */}
-                  <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                    <div className="flex items-center">
-                      <div className="flex items-center">
-                        {/* https://daisyui.com/components/radial-progress/ */}
-                        {/* Donut graph to show the score */}
-                        <div className={`radial-progress ${llmEvaluation.ranking.score <= 2 ? "text-secondary" : "text-primary"} mr-4`}
-                          style={{ "--value": LLMpercentage!, "--size": "3vw", "--thickness": "0.5vw" } as React.CSSProperties}
-                          aria-valuenow={LLMpercentage!}
-                          role="progressbar">
-                        </div>
-                        <div>
-                          <div className="text-xl font-bold">
-                            {llmEvaluation.ranking.score}/5 {getDescriptionForLlmEvaluation(llmEvaluation.ranking.score)}
-                          </div>
-                          <div className="text-sm text-gray-400 mt-1">LLM Evaluation</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  
+                  <LlmEvalCard llmEval={llmEvaluation} llmPercentage={LLMpercentage!}/>
 
-                  {/* Topical Relevance Card */}
-                  <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                    <div className="flex items-center">
-                      <div className="flex items-center">
-                        {/* https://daisyui.com/components/radial-progress/ */}
-                        {/* Donut graph to show the score */}
-                        <div className={`radial-progress ${topicalRelevance!.score <= 6 ? "text-secondary" : "text-primary"} mr-4`}
-                          style={{ "--value": topRelPercentage!, "--size": "3vw", "--thickness": "0.5vw" } as React.CSSProperties}
-                          aria-valuenow={topRelPercentage!}
-                          role="progressbar">
-                        </div>
-                        <div>
-                          <div className="text-xl font-bold">
-                            {topicalRelevance!.score}/10 {getDescriptionForTopRel(topicalRelevance!.score)}
-                          </div>
-                          <div className="text-sm text-gray-400 mt-1">Topical Relevance</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <TopRelCard topicalRel={topicalRelevance!} topRelPercentage={topRelPercentage!}/>
 
                   {/* Strengths Card */}
                   <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 flex items-center space-x-4">
