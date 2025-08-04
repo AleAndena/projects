@@ -1,90 +1,294 @@
 "use client";
-
 import { useState } from "react";
+import { determineStrengthsAndWeaknesses } from "./utils/utils";
+import { getScoreColor } from "./utils/utils";
+import { StrengthsWeaknessesDensity } from "@/components/strengths-weaknesses-keywords";
+import { LoadingAnalysis } from "@/components/loading-analysis";
+import { getExcelFile } from "./utils/csv_utils";
+import { Header } from "@/components/header";
+import { LlmEvalCard } from "@/components/cards/llm-eval-card";
+import { TopRelCard } from "@/components/cards/top-rel-card";
+import { StrengthCard } from "@/components/cards/strength-card";
+import { WeaknessCard } from "@/components/cards/weakness-card";
+
+// Disable static generation
+export const dynamic = 'force-dynamic'
 
 export default function Home() {
-  const [uncheckedUrl, setUncheckedUrl] = useState('');
-  const [isValid, setIsValid] = useState(true);
-  const [validUrl, setValidUrl] = useState('');
+  // URL submission state
+  const [url, setUrl] = useState('');
+  const [isValid, setIsValid] = useState(false);
+  const [clickedSubmit, setClickedSubmit] = useState(false);
 
+  // Analysis state
+  const [scrapedInfo, setScrapedInfo] = useState<scrapedInfo | null>(null);
+  const [llmEvaluation, setLlmEvaluation] = useState<LLMEvaluation | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [showCompletion, setShowCompletion] = useState(false);
+  const [analysisResults, setAnalysisResults] = useState<{ strengths: strengthWeakness[], weaknesses: strengthWeakness[] }>({ strengths: [], weaknesses: [] });
+  const [llmEvalIndex, setLlmEvalIndex] = useState(0);
+
+  async function scrapeAndAnalyze(urlToCheck: string) {
+    try {
+      setLoading(true);
+      setShowCompletion(false);
+      
+      // reset all the info when a new URL is put in
+      setScrapedInfo(null);
+      setLlmEvaluation(null);
+      setAnalysisResults({ strengths: [], weaknesses: [] })
+      setLlmEvalIndex(0);
+
+      // get an object containing the scraped information of the site
+      const formattedScrapingUrl = `/api/scrape/${encodeURIComponent(urlToCheck)}`;
+      const response = await fetch(formattedScrapingUrl);
+      const doc = await response.json();
+      setScrapedInfo(doc.data);
+      // remove structuredData and topicalRelevance since the llm-url-check does not need that info
+      const scrapedInfoFormattedForLlmCheck = {
+        ...doc.data,
+        url: urlToCheck
+      };
+      delete scrapedInfoFormattedForLlmCheck.structuredData;
+      delete scrapedInfoFormattedForLlmCheck.topicalRelevance;
+      // make a request to the LLM-URL-checker to get an evaluation
+      const scoring = await fetch('/api/llm-url-check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(scrapedInfoFormattedForLlmCheck)
+      });
+      const score = await scoring.json();
+      setLlmEvaluation(score);
+      setShowCompletion(true);
+      // Calculate strengths and weaknesses once we have all the data
+      if (doc.data && score) {
+        const results = determineStrengthsAndWeaknesses({
+          scrapedInfo: doc.data,
+          llmEvaluation: score
+        });
+        setAnalysisResults(results);
+      }
+    } catch (error) {
+      console.error('Error in scraping and analysis:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
   // check if input is a valid URL
-  function validateURL(input: string): boolean{
+  function validateURL(): boolean {
     // idea taken from: https://medium.com/@tariibaba/javascript-check-if-string-is-url-ddf98d50060a
-    try{
-      new URL(input);
+    try {
+      // add a check to see if it already has `https://` or not
+      // ideally we just do `setUrl()` with the fixed URL then use `url`, but react doesn't let us do that for performance reasons
+      let urlToCheck = url;
+      if (!url.includes("https://")) {
+        urlToCheck = "https://" + urlToCheck;
+        setUrl(urlToCheck);
+      }
+      new URL(urlToCheck);
       return true;
-    } catch (error){
+    } catch (error) {
       console.error(error);
       return false;
     }
   }
 
-  // handle URL submission
-  function handleSubmission(event: React.FormEvent) : undefined{
-    event.preventDefault();
-
-    // reset validUrl to empty because of new submission
-    setValidUrl('');
-
-    // check if new url is valid
-    const isValidUrl = validateURL(uncheckedUrl);
-    setIsValid(isValidUrl);
-
-    // if url is valid, analyze the corresponding page 
-    if(isValidUrl){
-      setValidUrl(uncheckedUrl);
-      console.log('valid URL', validUrl);
-      // analyzing will happen here, just console.logging for now
+  // handle the index state for the llm evluation
+  function incrementLlmEvalIndex() {
+    if (llmEvalIndex < 4) {
+      setLlmEvalIndex(llmEvalIndex + 1);
+    }
+  }
+  // handle the index state for the llm evluation
+  function decrementLlmEvalIndex() {
+    if (llmEvalIndex > 0) {
+      setLlmEvalIndex(llmEvalIndex - 1);
     }
   }
 
-  return (
-    <div className="min-h-screen bg-black p-8">
-      <div className="max-w-md bg-gray-900 rounded-lg p-6 shadow-lg border border-gray-800">
-        <h1 className="text-2xl font-bold text-white mb-6">URL Submission</h1>
-        
-        <form onSubmit={handleSubmission} className="space-y-4">
-          <div>
-            <label htmlFor="url" className="text-sm text-gray-300 mb-1 block">
-              Enter a full URL
-            </label>
-            <input
-              type="text"
-              id="url"
-              value={uncheckedUrl}
-              onChange={(e) => setUncheckedUrl(e.target.value)}
-              placeholder="https://example.com"
-              className={`w-full px-4 py-2 bg-gray-800 text-white border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all ${
-                !isValid ? 'border-red-500' : 'border-gray-700'
-              }`}
-            />
-            {!isValid && (
-              <p className="mt-1 text-sm text-red-400">Please enter a valid URL (e.g., https://example.com)</p>
-            )}
-          </div>
-          
-          <button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-          >
-            Submit URL
-          </button>
-        </form>
-  
-        {validUrl && (
-          <div className="mt-6 p-4 bg-gray-800 rounded-md border border-gray-700">
-            <p className="text-green-400 font-medium">Submitted URL:</p>
-            <a 
-              href={validUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-blue-400 hover:underline break-all"
-            >
-              {validUrl}
-            </a>
+  // handle URL submission
+  async function handleSubmission(event: React.FormEvent): Promise<undefined> {
+    event.preventDefault();
+    setClickedSubmit(true);
+    // check if new url is valid
+    const isValidUrl = validateURL();
+    setIsValid(isValidUrl);
+    // if url is valid, analyze the corresponding page 
+    if (isValidUrl) {
+      // add a check to see if it already has `https://` or not
+      let urlToCheck = url;
+      if (!url.includes("https://")) {
+        urlToCheck = "https://" + urlToCheck;
+      }
+      // call the analysis function
+      await scrapeAndAnalyze(urlToCheck);
+    }
+  }
+
+  // conditional variables that are used to show information after analysis is complete
+  const topicalRelevance: topicalRelevance | undefined = scrapedInfo?.topicalRelevance;
+  const keywordDensity: [keywordDensityObj] | undefined = scrapedInfo?.keywordDensity;
+  const LLMpercentage = llmEvaluation ? (llmEvaluation.ranking.score / 5) * 100 : null;
+  const topRelPercentage = topicalRelevance ? (topicalRelevance.score / 10) * 100 : null;
+  const arrOfLlmEvaluations = llmEvaluation ? llmEvaluation.ranking.questions.map((q, i) => (
+    <div key={i} className="border-l-6 border-blue-600 pl-3">
+      <p className="font-medium text-gray-200">{q.question}</p>
+      <div className="mt-2 text-sm">
+        <p className="text-gray-300">
+          <span className="font-semibold text-gray-200">Did the AI recommend your URL: </span>
+          {q.foundUrlMatch ? (
+            <span className="inline-block font-semibold text-green-400">Yes</span>
+          ) : (
+            <span className="inline-block font-semibold text-red-400">No</span>
+          )}
+        </p>
+        {q.llmRecommendedUrls.length > 0 && (
+          <div className="mt-1">
+            <span className="font-semibold text-gray-200">Recommended URLs:</span>
+            <ul className="list-disc pl-5 mt-1">
+              {q.llmRecommendedUrls.map((url: string, idx: number) => (
+                <li key={idx} className="text-gray-300 text-sm break-all">{url}</li>
+              ))}
+            </ul>
           </div>
         )}
       </div>
     </div>
+  )) : null;
+
+  return (
+        <div className="flex-1 p-8">
+          {/* Main Content */}
+          <div className="max-w-6xl mx-auto">
+
+            <Header />
+
+            {/* URL Input */}
+            <div className="mb-8">
+              <label htmlFor="url" className="block text-sm font-medium text-gray-300 mb-2">
+                Enter your website URL
+              </label>
+              <div className="flex">
+                <input
+                  type="text"
+                  id="url"
+                  value={url}
+                  onChange={(e) => {
+                    setUrl(e.target.value)
+                    setIsValid(false)
+                    setClickedSubmit(false)
+                  }}
+                  placeholder="e.g.,   https://www.example.com"
+                  className="flex-1 bg-gray-800 border border-gray-700 text-white px-4 py-2 rounded-l focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <button
+                  onClick={handleSubmission}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-r font-medium"
+                >
+                  Analyze
+                </button>
+              </div>
+              {!isValid && clickedSubmit && (
+                <p className="mt-1 text-sm text-red-400">Please enter a valid URL (e.g., https://example.com, example.com)</p>
+              )}
+            </div>
+
+            {/* Info Text + CSV Button */}
+            <div className="mb-8 flex justify-between items-start">
+              {/* Info Text */}
+              <div className="text-sm text-gray-400">
+                <ul className="space-y-1">
+                  <li>• See what LLMs say about your brand and use it to your advantage</li>
+                  <li>• If your brand falls short, reach out to us so we can change that for you!</li>
+                </ul>
+              </div>
+
+              {/* CSV Export Button (only when results exist) */}
+              {llmEvaluation && scrapedInfo && (
+                <button
+                  onClick={() => getExcelFile(llmEvaluation, analysisResults, keywordDensity!)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm whitespace-nowrap"
+                >
+                  Export as CSV
+                </button>
+              )}
+            </div>
+
+            {/* Results Grid - only shown when results are available */}
+            {llmEvaluation && scrapedInfo && (
+              <div>
+                {/* Analysis Summary Cards */}
+                <div className="grid grid-cols-4 gap-4 mb-8">
+                  <LlmEvalCard llmEval={llmEvaluation} llmPercentage={LLMpercentage!}/>
+
+                  <TopRelCard topicalRel={topicalRelevance!} topRelPercentage={topRelPercentage!}/>
+
+                  <StrengthCard strengthLength={analysisResults.strengths.length}/>
+                  
+                  <WeaknessCard weaknessLength={analysisResults.weaknesses.length}/>                  
+                </div>
+
+                <div className="mt-8 grid gap-6 md:grid-cols-2">
+                  {/* LLM Evaluation Section */}
+                  <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 flex flex-col h-[75vh] min-h-[75vh]">
+                    <h2 className="text-xl font-semibold mb-6 text-white">LLM Evaluation</h2>
+                    <div className="mb-8">
+                      <div className="flex items-baseline space-x-4">
+                        <span className="text-4xl font-bold my-2 inline-block">
+                          <span className={getScoreColor(llmEvaluation.ranking.score)}>
+                            {llmEvaluation.ranking.score}/5
+                          </span>
+                        </span>
+                        <span className="text-gray-200 text-lg">Overall Score</span>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="space-y-6" id="llm-evals">
+                        {llmEvaluation && arrOfLlmEvaluations ? (
+                          arrOfLlmEvaluations[llmEvalIndex]
+                        ) : (
+                          <p className="text-gray-400 text-lg">No evaluation data available</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-6 flex justify-between" id="llm-button-container">
+                      <button
+                        onClick={decrementLlmEvalIndex}
+                        className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={llmEvalIndex === 0}
+                      >
+                        Prev
+                      </button>
+                      <button
+                        onClick={incrementLlmEvalIndex}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={llmEvalIndex >= 4}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Strengths and Weaknesses Analysis */}
+                  <StrengthsWeaknessesDensity
+                    strengths={analysisResults.strengths}
+                    weaknesses={analysisResults.weaknesses}
+                    keywordDensity={keywordDensity!}
+                  />
+                </div>
+              </div>
+            )}
+
+            {loading && (
+              <LoadingAnalysis
+                scrapedInfo={scrapedInfo}
+                llmEvaluation={llmEvaluation}
+                showCompletion={showCompletion}
+              />
+            )}
+          </div>
+        </div>
   );
 }
