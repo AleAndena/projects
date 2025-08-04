@@ -43,7 +43,6 @@ export default function Home() {
       const formattedScrapingUrl = `/api/scrape/${encodeURIComponent(urlToCheck)}`;
       const response = await fetch(formattedScrapingUrl);
       const doc = await response.json();
-      console.log('SCRAPED INFORMATION', doc.data);
       setScrapedInfo(doc.data);
       // remove structuredData and topicalRelevance since the llm-url-check does not need that info
       const scrapedInfoFormattedForLlmCheck = {
@@ -61,7 +60,6 @@ export default function Home() {
         body: JSON.stringify(scrapedInfoFormattedForLlmCheck)
       });
       const score = await scoring.json();
-      console.log('LLM Evaluation using scraped info', score);
       setLlmEvaluation(score);
       setShowCompletion(true);
       // Calculate strengths and weaknesses once we have all the data
